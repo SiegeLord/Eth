@@ -56,17 +56,20 @@ impl<T> FreeList<T>
 		self.items.get_mut(idx).as_mut()
 	}
 
+	#[allow(dead_code)]
 	pub fn iter<'l>(&'l self) -> FreeListItems<'l, T>
 	{
 		FreeListItems{ idx: 0, items: self.items.as_slice() }
 	}
 
+	#[allow(dead_code)]
 	pub fn len(&self) -> uint
 	{
 		self.items.len() - self.free_idxs.len()
 	}
 }
 
+#[allow(dead_code)]
 pub struct FreeListItems<'l, T>
 {
 	idx: uint,
