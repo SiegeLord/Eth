@@ -2,12 +2,15 @@
 #![feature(macro_rules)]
 #![feature(globs)]
 
+extern crate collections;
+
 use ces::{World, Entities};
 use ces::components::{Velocity, Location, Components, ComponentType};
 use ces::system::System;
 
 mod ces;
 mod free_list;
+mod resource_manager;
 
 simple_system!
 (
