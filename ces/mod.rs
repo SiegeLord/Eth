@@ -1,6 +1,80 @@
+
+#![macro_escape]
+
 use free_list::FreeList;
-use ces::components::{Velocity, Location, ComponentType};
+use ces::components::{ComponentType, Components, NUM_COMPONENTS};
 use ces::system::{System};
+
+macro_rules! components
+{
+	( $($comp_name: ident, $field_name: ident);* ) =>
+	{
+		pub struct Components
+		{
+			$(
+				pub $field_name: ComponentSet<$comp_name>,
+			)*
+		}
+		
+		impl Components
+		{
+			pub fn new() -> Components
+			{
+				Components
+				{
+					$(
+						$field_name: ComponentSet::new(),
+					)*
+				}
+			}
+		}
+		
+		#[repr(uint)]
+		pub enum ComponentType
+		{
+			$(
+				$comp_name,
+			)*
+		}
+		
+		impl ComponentType
+		{
+			pub fn as_uint(&self) -> uint
+			{
+				*self as uint
+			}
+		}
+	}
+}
+
+macro_rules! component
+{
+	($comp_name: ident , $field_name: ident { $($name: ident : $typ: ty),+ } ) =>
+	{
+		pub struct $comp_name
+		{
+			$(
+				pub $name : $typ,
+			)*
+		}
+		
+		impl Component for $comp_name
+		{
+			fn add_self(self, components: &mut Components) -> uint
+			{
+				components.$field_name.add(self)
+			}
+			fn sched_remove(_: Option<$comp_name>, components: &mut Components, entity_idx: uint, component_idx: uint)
+			{
+				components.$field_name.sched_remove(entity_idx, component_idx);
+			}
+			fn get_type(_: Option<$comp_name>) -> ComponentType
+			{
+				$comp_name
+			}
+		}
+	}
+}
 
 pub mod system;
 pub mod components;
@@ -14,7 +88,7 @@ trait Component
 
 pub struct Entity
 {
-	components: [Option<uint>, ..2]
+	components: [Option<uint>, ..NUM_COMPONENTS]
 }
 
 impl Entity
@@ -23,7 +97,7 @@ impl Entity
 	{
 		Entity
 		{
-			components: [None, ..2]
+			components: [None, ..NUM_COMPONENTS]
 		}
 	}
 	
@@ -115,23 +189,8 @@ impl<T: Component> ComponentSet<T>
     }
 }
 
-pub struct Components
+impl self::components::Components
 {
-	pub velocity: ComponentSet<Velocity>,
-	pub location: ComponentSet<Location>,
-}
-
-impl Components
-{
-	fn new() -> Components
-	{
-		Components
-		{
-			velocity: ComponentSet::new(),
-			location: ComponentSet::new(),
-		}
-	}
-
 	pub fn add<T: Component>(&mut self, entity_idx: uint, comp: T, entities: &mut Entities)
 	{
 		let e = entities.entities.get_mut(entity_idx).unwrap();
