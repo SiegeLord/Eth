@@ -2,11 +2,13 @@ use collections::hashmap::HashMap;
 use std::rc::Rc;
 use std::hash::Hash;
 
+#[allow(dead_code)]
 pub trait ResourceLoader<K, Q, T>
 {
     fn load(_dummy: Option<Self>, key: Q) -> Option<(K, T)>;
 }
 
+#[allow(dead_code)]
 pub struct ResourceManager<K, Q, T, L>
 {
     data: HashMap<K, Rc<T>>
@@ -14,6 +16,7 @@ pub struct ResourceManager<K, Q, T, L>
 
 impl<K: Hash + TotalEq, Q: Hash + Equiv<K>, T, L: ResourceLoader<K, Q, T>> ResourceManager<K, Q, T, L>
 {
+	#[allow(dead_code)]
     pub fn new() -> ResourceManager<K, Q, T, L>
     {
         ResourceManager
@@ -22,6 +25,7 @@ impl<K: Hash + TotalEq, Q: Hash + Equiv<K>, T, L: ResourceLoader<K, Q, T>> Resou
         }
     }
     
+    #[allow(dead_code)]
     pub fn load(&mut self, key: Q) -> Option<Rc<T>>
     {
         println!("Load");

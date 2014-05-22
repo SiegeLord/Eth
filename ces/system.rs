@@ -16,7 +16,7 @@ pub trait System
 		let cur_pos = entities.as_slice().position_elem(&entity_idx);
 		for &pos in cur_pos.iter()
 		{
-			println!("Removed {}", entity_idx);
+			//~ println!("Removed {}", entity_idx);
 			entities.swap_remove(pos);
 		}
 	}
@@ -31,7 +31,7 @@ pub trait System
 		{
 			if cur_pos.is_none()
 			{
-				println!("Added {}", entity_idx);
+				//~ println!("Added {}", entity_idx);
 				entities.push(entity_idx)
 			}
 		}
@@ -39,7 +39,7 @@ pub trait System
 		{			
 			for &pos in cur_pos.iter()
 			{
-				println!("Removed {}", entity_idx);
+				//~ println!("Removed {}", entity_idx);
 				entities.swap_remove(pos);
 			}
 		}

@@ -4,6 +4,7 @@
 use free_list::FreeList;
 use ces::components::{ComponentType, Components, NUM_COMPONENTS};
 use ces::system::{System};
+use collections::HashMap;
 
 macro_rules! components
 {
@@ -26,6 +27,14 @@ macro_rules! components
 						$field_name: ComponentSet::new(),
 					)*
 				}
+			}
+			
+			// entity_idx, component type
+			pub fn process_removals(&mut self, entity_callback: &mut |uint, ComponentType|)
+			{
+				$(
+					self.$field_name.process_removals(entity_callback);
+				)*
 			}
 		}
 		
@@ -64,10 +73,22 @@ macro_rules! component
 			{
 				components.$field_name.add(self)
 			}
-			fn sched_remove(_: Option<$comp_name>, components: &mut Components, entity_idx: uint, component_idx: uint)
+
+			fn get<'l>(_: Option<$comp_name>, comp_idx: uint, components: &'l Components) -> &'l $comp_name
 			{
-				components.$field_name.sched_remove(entity_idx, component_idx);
+				components.$field_name.get(comp_idx)
 			}
+
+			fn get_mut<'l>(_: Option<$comp_name>, comp_idx: uint, components: &'l mut Components) -> &'l mut $comp_name
+			{
+				components.$field_name.get_mut(comp_idx)
+			}
+
+			fn sched_remove(_: Option<$comp_name>, components: &mut Components, entity_idx: uint, comp_idx: uint)
+			{
+				components.$field_name.sched_remove(entity_idx, comp_idx);
+			}
+
 			fn get_type(_: Option<$comp_name>) -> ComponentType
 			{
 				$comp_name
@@ -82,7 +103,9 @@ pub mod components;
 trait Component
 {
 	fn add_self(self, components: &mut Components) -> uint;
-	fn sched_remove(dummy: Option<Self>, components: &mut Components, entity_idx: uint, component_idx: uint);
+	fn get<'l>(dummy: Option<Self>, comp_idx: uint, components: &'l Components) -> &'l Self;
+	fn get_mut<'l>(dummy: Option<Self>, comp_idx: uint, components: &'l mut Components) -> &'l mut Self;
+	fn sched_remove(dummy: Option<Self>, components: &mut Components, entity_idx: uint, comp_idx: uint);
 	fn get_type(dummy: Option<Self>) -> ComponentType;
 }
 
@@ -125,11 +148,13 @@ impl Entity
 		have_all
 	}
 	
+	#[allow(dead_code)]
 	pub fn get<'l, T: Component>(&self, comp_set: &'l ComponentSet<T>) -> Option<&'l T>
 	{
 		self.get_comp_idx(Component::get_type(None::<T>)).map(|idx| comp_set.get(idx))
 	}
 
+	#[allow(dead_code)]
 	pub fn get_mut<'l, T: Component>(&self, comp_set: &'l mut ComponentSet<T>) -> Option<&'l mut T>
 	{
 		match self.get_comp_idx(Component::get_type(None::<T>))
@@ -202,6 +227,25 @@ impl self::components::Components
 		}
 	}
 
+	pub fn get<'l, T: Component>(&'l self, entity_idx: uint, entities: &Entities) -> Option<&'l T>
+	{
+		let e = entities.entities.get(entity_idx).unwrap();
+		e.get_comp_idx(Component::get_type(None::<T>)).map(|comp_idx|
+		{
+			Component::get(None::<T>, comp_idx, self)
+		})
+	}
+
+	pub fn get_mut<'l, T: Component>(&'l mut self, entity_idx: uint, entities: &Entities) -> Option<&'l mut T>
+	{
+		let e = entities.entities.get(entity_idx).unwrap();
+		match e.get_comp_idx(Component::get_type(None::<T>))
+		{
+			Some(comp_idx) => Some(Component::get_mut(None::<T>, comp_idx, self)),
+			None => None
+		}
+	}
+
 	pub fn sched_remove<T: Component>(&mut self, entity_idx: uint, entities: &mut Entities)
 	{
 		let e = entities.entities.get_mut(entity_idx).unwrap();
@@ -211,13 +255,6 @@ impl self::components::Components
 			Component::sched_remove(None::<T>, self, entity_idx, comp_idx);
 			changes.push(entity_idx);
 		});
-	}
-	
-	// entity_idx, component type
-	fn process_removals(&mut self, entity_callback: &mut |uint, ComponentType|)
-	{
-		self.velocity.process_removals(entity_callback);
-		self.location.process_removals(entity_callback);
 	}
 }
 
@@ -288,7 +325,7 @@ pub struct World
 {
 	entities: Entities,
 	components: Components,
-	systems: Vec<Box<System>>,
+	systems: HashMap<i32, Vec<Box<System>>>,
 }
 
 impl World
@@ -299,59 +336,88 @@ impl World
 		{
 			entities: Entities::new(),
 			components: Components::new(),
-			systems: vec![],
+			systems: HashMap::new(),
 		}
 	}
 
-	pub fn add_system(&mut self, sys: Box<System>)
+	#[allow(dead_code)]
+	pub fn add_system<T: ToPrimitive>(&mut self, event_id: T, sys: Box<System>)
 	{
-		self.systems.push(sys);
+		let vec = self.systems.find_or_insert(event_id.to_i32().unwrap(), vec![]);
+		vec.push(sys);
 	}
 
+	#[allow(dead_code)]
 	pub fn update(&mut self)
 	{
-		println!("Update");
+		//~ println!("Update");
 		
 		let entities = &mut self.entities;
 		let systems = &mut self.systems;	
 		{
 			entities.process_changes(&mut self.components, |entity_idx, entity|
 			{
-				for sys in systems.mut_iter()
+				for sys in systems.mut_iter().flat_map(|(_, vec)| vec.mut_iter())
 				{
 					sys.component_changed_event(entity, entity_idx);
 				}
 			});
 			entities.process_removals(|entity_idx|
 			{
-				for sys in systems.mut_iter()
+				for sys in systems.mut_iter().flat_map(|(_, vec)| vec.mut_iter())
 				{
 					sys.remove_entity(entity_idx);
 				}
 			});
 		}
-		
-		for sys in systems.mut_iter()
-		{
-			sys.update(entities, &mut self.components);
-		}
 	}
 
+	#[allow(dead_code)]
+	pub fn update_systems<T: ToPrimitive>(&mut self, event_id: T)
+	{
+		self.update();
+		let entities = &mut self.entities;
+		let components = &mut self.components;
+		self.systems.find_mut(&event_id.to_i32().unwrap()).map(|systems|
+		{
+			for sys in systems.mut_iter()
+			{
+				sys.update(entities, components);
+			}
+		});
+	}
+
+	#[allow(dead_code)]
 	pub fn add_entity(&mut self) -> uint
 	{
 		self.entities.add()
 	}
 
+	#[allow(dead_code)]
 	pub fn sched_remove_entity(&mut self, entity_idx: uint)
 	{
 		self.entities.sched_remove(entity_idx);
 	}
 
+	#[allow(dead_code)]
 	pub fn add_component<T: Component>(&mut self, entity_idx: uint, comp: T)
 	{
 		self.components.add(entity_idx, comp, &mut self.entities);
 	}
+
+	#[allow(dead_code)]
+	pub fn get_component_mut<'l, T: Component>(&'l mut self, entity_idx: uint) -> Option<&'l mut T>
+	{
+		self.components.get_mut(entity_idx, &self.entities)
+	}
 	
+	#[allow(dead_code)]
+	pub fn get_component<'l, T: Component>(&'l self, entity_idx: uint) -> Option<&'l T>
+	{
+		self.components.get(entity_idx, &self.entities)
+	}
+	
+	#[allow(dead_code)]
 	pub fn sched_remove_component<T: Component>(&mut self, entity_idx: uint)
 	{
 		self.components.sched_remove::<T>(entity_idx, &mut self.entities);
