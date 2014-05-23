@@ -53,6 +53,10 @@ simple_system!
 							_ => ()
 						}
 					}
+					key::Escape =>
+					{
+						state.quit = true;
+					}
 					_ => ()
 				}
 			});
@@ -60,9 +64,9 @@ simple_system!
 		
 		if switch
 		{
-			components.add(entity_idx, GameMode{ dummy: () }, entities);
+			let game_mode = GameMode::new("levels/beth.cfg", entities, components);
+			components.add(entity_idx, game_mode, entities);
 			components.sched_remove::<MenuMode>(entity_idx, entities);
-			println!("Switch!");
 		}
 	}
 )

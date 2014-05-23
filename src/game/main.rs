@@ -8,22 +8,31 @@ extern crate allegro_dialog;
 extern crate allegro_font;
 extern crate allegro_image;
 extern crate libc;
+extern crate toml;
 
 use allegro5::*;
 use allegro_dialog::*;
 use allegro_font::*;
 use allegro_image::*;
-use ces::{World, Entities};
-use ces::components::{State, GameMode, MenuMode, Components, ComponentType};
-use ces::system::System;
+use ces::World;
+use ces::components::{State, MenuMode};
 use menu::{MenuInputSystem, MenuDrawSystem};
+use game::{GameInputSystem, GameLogicSystem, GameDrawSystem};
+use player::{PlayerInputSystem, PlayerDrawSystem};
+use physics::PhysicsSystem;
+use old_location::OldLocationSystem;
 use resource_manager::ResourceManager;
 
 mod ces;
 mod menu;
+mod game;
 mod free_list;
 mod resource_manager;
 mod bitmap_loader;
+mod star_system;
+mod player;
+mod physics;
+mod old_location;
 
 #[repr(i32)]
 enum WorldEvent
@@ -46,67 +55,58 @@ impl ToPrimitive for WorldEvent
 	}
 }
 
-simple_system!
-(
-	GameLogicSystem[GameMode, State]
-	{
-		let _ = entity_idx;
-		let _ = entities;
-		let _ = components;
-		println!("Logic!");
-	}
-)
-
-simple_system!
-(
-	GameDrawSystem[GameMode, State]
-	{
-		let e = entities.get(entity_idx);
-		let core = &e.get(&mut components.state).unwrap().core;
-		
-		
-		let t = unsafe
-		{
-			allegro5::ffi::al_get_time()
-		};
-		
-		//~ println!("Draw game {}", t.fract());
-
-		core.clear_to_color(core.map_rgb_f(t.fract() as f32, 0.0, 0.0));
-	}
-)
-
 static MODE_ENTITY: uint = 0;
+static FIELD_WIDTH: i32 = 600;
+static FIELD_HEIGHT: i32 = 350;
+static DT: f64 = 1.0 / 60.0;
 
 fn game()
 {
+	let root = toml::parse_from_file("options.cfg").ok().expect("Could not load/parse 'options.cfg'");
+	
+	let manual_vsync = root.lookup("game.manual_vsync").map(|v| v.get_bool().unwrap_or(false)).unwrap_or(false);
+	let fullscreen = root.lookup("game.fullscreen").map(|v| v.get_bool().unwrap_or(false)).unwrap_or(false);
+	
 	let mut core = Core::init().unwrap();
 	let font = FontAddon::init(&core).expect("Could not init font addon");
 	let _image = ImageAddon::init(&core).expect("Could not init image addon");
 	
 	core.install_keyboard();
 	
-	let disp = core.create_display(800, 600).unwrap();
+	if !manual_vsync
+	{
+		core.set_new_display_option(Vsync, 1, Suggest);
+	}
+	if fullscreen
+	{
+		core.set_new_display_flags(FULLSCREEN_WINDOW);
+	}
+	let disp = core.create_display(1200, 700).unwrap();
 	disp.set_window_title(&"E'th".to_c_str());
-	let bw = disp.get_width() / 2;
-	let bh = disp.get_height() / 2;
+	let bw = FIELD_WIDTH;
+	let bh = FIELD_HEIGHT;
 	let buffer = core.create_bitmap(bw, bh).unwrap();
 
-	let timer = core.create_timer(1.0 / 60.0).unwrap();
+	let timer = core.create_timer(DT).unwrap();
 
-	let q = core.create_event_queue().unwrap();
+	let mut q = core.create_event_queue().unwrap();
 	q.register_event_source(disp.get_event_source());
 	q.register_event_source(core.get_keyboard_event_source().unwrap());
 	q.register_event_source(timer.get_event_source());
 
 	let mut world = World::new();
 	
+	world.add_system(Input, box GameInputSystem::new());
 	world.add_system(Input, box MenuInputSystem::new());
+	world.add_system(Input, box PlayerInputSystem::new());
 	
+	world.add_system(Logic, box OldLocationSystem::new());
 	world.add_system(Logic, box GameLogicSystem::new());
+	world.add_system(Logic, box PhysicsSystem::new());
 	
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
+	world.add_system(Draw, box PlayerDrawSystem::new());
 	
 	let bmp_manager = ResourceManager::new();
 	let ui_font = font.load_bitmap_font("data/font.png").expect("Couldn't create built-in font from 'data/font.png'");
@@ -114,6 +114,7 @@ fn game()
 	let mut state = State
 	{
 		key_down: None,
+		key_up: None,
 		core: core,
 		font: font,
 		bmp_manager: bmp_manager,
@@ -121,6 +122,7 @@ fn game()
 		dh: bh,
 		dw: bw,
 		quit: false,
+		draw_interp: 0.0
 	};
 	
 	world.add_entity();
@@ -132,49 +134,66 @@ fn game()
 		world.get_component_mut::<State>(MODE_ENTITY).unwrap()
 	}
 	
-	let mut redraw = true;
 	timer.start();
+	let mut game_time = 0.0;
+	let offset = get_state(&mut world).core.get_time();
 	'exit: loop
 	{
-		if redraw && q.is_empty()
+		for event in q
 		{
-			get_state(&mut world).core.set_target_bitmap(&buffer);
+			get_state(&mut world).key_down = None;
+			get_state(&mut world).key_up = None;
 			
-			world.update_systems(Draw);
-			
-			let c = get_state(&mut world).core.map_rgb_f(1.0, 0.0, 0.0);
-			get_state(&mut world).core.draw_pixel(-1.0, -1.0, c);
-			
-			get_state(&mut world).core.set_target_bitmap(disp.get_backbuffer());
-			get_state(&mut world).core.draw_scaled_bitmap(&buffer, 0.0, 0.0, bw as f32, bh as f32, 0.0, 0.0, bw as f32 * 2.0, bh as f32 * 2.0, Flag::zero());
-			
-			disp.flip();
-			redraw = false;
-		}
-
-		get_state(&mut world).key_down = None;
-		match q.wait_for_event()
-		{
-			DisplayClose{..} =>
+			match event
 			{
-				break 'exit;
-			},
-			KeyDown{keycode: k, ..} =>
-			{
-				get_state(&mut world).key_down = Some(k);
-				world.update_systems(Input);
-				if k == key::Escape || get_state(&mut world).quit
+				DisplayClose{..} =>
 				{
 					break 'exit;
-				}
-			},
-			TimerTick{..} =>
+				},
+				KeyDown{keycode: k, ..} =>
+				{
+					get_state(&mut world).key_down = Some(k);
+					world.update_systems(Input);
+				},
+				KeyUp{keycode: k, ..} =>
+				{
+					get_state(&mut world).key_up = Some(k);
+					world.update_systems(Input);
+				},
+				TimerTick{count, ..} =>
+				{
+					game_time = count as f64 * DT;
+					world.update_systems(Logic);
+				},
+				_ => ()
+			}
+			
+			if get_state(&mut world).quit
 			{
-				world.update_systems(Logic);
-				redraw = true;
-			},
-			_ => ()
+				break 'exit;
+			}
 		}
+		
+		get_state(&mut world).core.set_target_bitmap(&buffer);
+
+		let cur_time = get_state(&mut world).core.get_time();
+		get_state(&mut world).draw_interp = ((cur_time - offset - game_time) / DT) as f32;
+		world.update_systems(Draw);
+		
+		let c = get_state(&mut world).core.map_rgb_f(1.0, 0.0, 0.0);
+		get_state(&mut world).core.draw_pixel(-1.0, -1.0, c);
+		
+		let dx = ((disp.get_width() - 2 * bw) / 2) as f32;
+		let dy = ((disp.get_height() - 2 * bh) / 2) as f32;
+		
+		get_state(&mut world).core.set_target_bitmap(disp.get_backbuffer());
+		get_state(&mut world).core.draw_scaled_bitmap(&buffer, 0.0, 0.0, bw as f32, bh as f32, dx, dy, bw as f32 * 2.0, bh as f32 * 2.0, Flag::zero());
+		
+		if manual_vsync
+		{
+			disp.wait_for_vsync();
+		}
+		disp.flip();
 	}
 }
 
