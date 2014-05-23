@@ -50,7 +50,7 @@ macro_rules! simple_system
 {
 	($name: ident [ $($comp: ident),+ ] $block: expr) =>
 	{
-		struct $name
+		pub struct $name
 		{
 			entities: Vec<uint>
 		}

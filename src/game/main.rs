@@ -5,16 +5,25 @@ extern crate collections;
 #[phase(syntax, link)]
 extern crate allegro5;
 extern crate allegro_dialog;
+extern crate allegro_font;
+extern crate allegro_image;
+extern crate libc;
 
 use allegro5::*;
 use allegro_dialog::*;
+use allegro_font::*;
+use allegro_image::*;
 use ces::{World, Entities};
 use ces::components::{State, GameMode, MenuMode, Components, ComponentType};
 use ces::system::System;
+use menu::{MenuInputSystem, MenuDrawSystem};
+use resource_manager::ResourceManager;
 
 mod ces;
+mod menu;
 mod free_list;
 mod resource_manager;
+mod bitmap_loader;
 
 #[repr(i32)]
 enum WorldEvent
@@ -37,40 +46,6 @@ impl ToPrimitive for WorldEvent
 	}
 }
 
-//~ simple_system!
-//~ (
-	//~ PhysicsSystem[Velocity, Location]
-	//~ {
-		//~ let e = entities.get(entity_idx);
-		//~ let loc = e.get_mut(&mut components.location).unwrap();
-		//~ let vel = e.get(&components.velocity).unwrap();
-		//~ 
-		//~ loc.x += vel.vx;
-		//~ loc.y += vel.vy;
-		//~ 
-		//~ println!("{} {} {}", entity_idx, loc.x, loc.y);
-	//~ }
-//~ )
-
-simple_system!
-(
-	MenuInputSystem[MenuMode, State]
-	{
-		let switch = 
-		{
-			let e = entities.get(entity_idx);
-			e.get_mut(&mut components.state).unwrap().key_down.map_or(false, |k| k == key::Space)
-		};
-		
-		if switch
-		{
-			components.add(entity_idx, GameMode{ dummy: () }, entities);
-			components.sched_remove::<MenuMode>(entity_idx, entities);
-			println!("Switch!");
-		}
-	}
-)
-
 simple_system!
 (
 	GameLogicSystem[GameMode, State]
@@ -84,25 +59,20 @@ simple_system!
 
 simple_system!
 (
-	MenuDrawSystem[MenuMode, State]
-	{
-		let e = entities.get(entity_idx);
-		let core = &e.get(&mut components.state).unwrap().core;
-		println!("Draw menu");
-		
-		core.clear_to_color(core.map_rgb_f(0.0, 0.0, 0.0));
-	}
-)
-
-simple_system!
-(
 	GameDrawSystem[GameMode, State]
 	{
 		let e = entities.get(entity_idx);
 		let core = &e.get(&mut components.state).unwrap().core;
-		println!("Draw game");
+		
+		
+		let t = unsafe
+		{
+			allegro5::ffi::al_get_time()
+		};
+		
+		//~ println!("Draw game {}", t.fract());
 
-		core.clear_to_color(core.map_rgb_f(0.5, 0.2, 0.4));
+		core.clear_to_color(core.map_rgb_f(t.fract() as f32, 0.0, 0.0));
 	}
 )
 
@@ -111,10 +81,16 @@ static MODE_ENTITY: uint = 0;
 fn game()
 {
 	let mut core = Core::init().unwrap();
+	let font = FontAddon::init(&core).expect("Could not init font addon");
+	let _image = ImageAddon::init(&core).expect("Could not init image addon");
+	
 	core.install_keyboard();
 	
 	let disp = core.create_display(800, 600).unwrap();
-	disp.set_window_title(&"Main Window".to_c_str());
+	disp.set_window_title(&"E'th".to_c_str());
+	let bw = disp.get_width() / 2;
+	let bh = disp.get_height() / 2;
+	let buffer = core.create_bitmap(bw, bh).unwrap();
 
 	let timer = core.create_timer(1.0 / 60.0).unwrap();
 
@@ -132,9 +108,24 @@ fn game()
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
 	
+	let bmp_manager = ResourceManager::new();
+	let ui_font = font.load_bitmap_font("data/font.png").expect("Couldn't create built-in font from 'data/font.png'");
+	
+	let mut state = State
+	{
+		key_down: None,
+		core: core,
+		font: font,
+		bmp_manager: bmp_manager,
+		ui_font: ui_font,
+		dh: bh,
+		dw: bw,
+		quit: false,
+	};
+	
 	world.add_entity();
-	world.add_component(MODE_ENTITY, MenuMode{ dummy: () });
-	world.add_component(MODE_ENTITY, State{ key_down: None, core: core });
+	world.add_component(MODE_ENTITY, MenuMode::new(&mut state));
+	world.add_component(MODE_ENTITY, state);
 	
 	fn get_state<'l>(world: &'l mut World) -> &'l mut State
 	{
@@ -147,7 +138,15 @@ fn game()
 	{
 		if redraw && q.is_empty()
 		{
+			get_state(&mut world).core.set_target_bitmap(&buffer);
+			
 			world.update_systems(Draw);
+			
+			let c = get_state(&mut world).core.map_rgb_f(1.0, 0.0, 0.0);
+			get_state(&mut world).core.draw_pixel(-1.0, -1.0, c);
+			
+			get_state(&mut world).core.set_target_bitmap(disp.get_backbuffer());
+			get_state(&mut world).core.draw_scaled_bitmap(&buffer, 0.0, 0.0, bw as f32, bh as f32, 0.0, 0.0, bw as f32 * 2.0, bh as f32 * 2.0, Flag::zero());
 			
 			disp.flip();
 			redraw = false;
@@ -164,7 +163,7 @@ fn game()
 			{
 				get_state(&mut world).key_down = Some(k);
 				world.update_systems(Input);
-				if k == key::Escape
+				if k == key::Escape || get_state(&mut world).quit
 				{
 					break 'exit;
 				}
@@ -184,6 +183,7 @@ allegro_main!
 	use std::task::try;
     use std::any::AnyRefExt;
 
+	//~ game();
 	match try(game)
 	{
 		Err(e) =>

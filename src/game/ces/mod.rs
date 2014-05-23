@@ -56,17 +56,10 @@ macro_rules! components
 	}
 }
 
-macro_rules! component
+macro_rules! component_impl
 {
-	($comp_name: ident , $field_name: ident { $($name: ident : $typ: ty),+ } ) =>
+	($comp_name: ident , $field_name: ident) =>
 	{
-		pub struct $comp_name
-		{
-			$(
-				pub $name : $typ,
-			)*
-		}
-		
 		impl Component for $comp_name
 		{
 			fn add_self(self, components: &mut Components) -> uint
@@ -94,6 +87,21 @@ macro_rules! component
 				$comp_name
 			}
 		}
+	}
+}
+
+macro_rules! component
+{
+	($comp_name: ident , $field_name: ident { $($name: ident : $typ: ty),+ } ) =>
+	{
+		pub struct $comp_name
+		{
+			$(
+				pub $name : $typ,
+			)*
+		}
+		
+		component_impl!($comp_name, $field_name)
 	}
 }
 

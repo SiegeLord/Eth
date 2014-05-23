@@ -1,7 +1,11 @@
 use ces::{Component, ComponentSet};
 
 use allegro5::key::KeyCode;
-use allegro5::Core;
+use allegro5::{Bitmap, Core};
+use allegro_font::{FontAddon, Font};
+use bitmap_loader::BitmapLoader;
+use resource_manager::ResourceManager;
+use std::rc::Rc;
 
 component!(
 	Location, location
@@ -29,15 +33,34 @@ component!(
 component!(
 	MenuMode, menu_mode
 	{
-		dummy: ()
+		cur_sel: uint,
+		title: Rc<Bitmap>
 	}
 )
+
+impl MenuMode
+{
+	pub fn new(state: &mut State) -> MenuMode
+	{
+		MenuMode
+		{
+			cur_sel: 0,
+			title: state.bmp_manager.load("data/title.png", &state.core).unwrap()
+		}
+	}
+}
 
 component!(
 	State, state
 	{
 		core: Core,
-		key_down: Option<KeyCode>
+		font: FontAddon,
+		bmp_manager: ResourceManager<StrBuf, Bitmap, BitmapLoader>,
+		key_down: Option<KeyCode>,
+		ui_font: Font,
+		dw: i32,
+		dh: i32,
+		quit: bool
 	}
 )
 
