@@ -53,23 +53,29 @@ component!(
 	{
 		star_system: StarSystem,
 		player_entity: uint,
-		star_entities: Vec<uint>
+		star_entities: Vec<uint>,
+		time_bonus: f64,
+		score: i32,
+		high_score: i32
 	}
 )
 
 impl GameMode
 {
-	pub fn new(star_system: &str, entities: &mut Entities, components: &mut Components) -> GameMode
+	pub fn new(star_system: &str, score: i32, high_score: i32, entities: &mut Entities, components: &mut Components) -> GameMode
 	{
 		let sys = StarSystem::new(star_system);
 		let mut player_entity = 0;
 		let mut star_entities = vec![];
-		sys.create_entities(entities, components, &mut player_entity, &mut star_entities);
+		sys.create_entities(entities, components, 1, 100.0, &mut player_entity, &mut star_entities);
 		GameMode
 		{
 			star_system: sys,
 			player_entity: player_entity,
 			star_entities: star_entities,
+			score: score,
+			high_score: high_score,
+			time_bonus: 60.0,
 		}
 	}
 }
@@ -113,6 +119,7 @@ component!(
 component!(
 	Player, player
 	{
+		fuel: f64,
 		up: f64,
 		down: f64,
 		left: f64,
@@ -122,10 +129,11 @@ component!(
 
 impl Player
 {
-	pub fn new() -> Player
+	pub fn new(fuel: f64) -> Player
 	{
 		Player
 		{
+			fuel: fuel,
 			up: 0.0,
 			down: 0.0,
 			left: 0.0,

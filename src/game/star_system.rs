@@ -59,9 +59,9 @@ impl StarSystem
 		}
 	}
 
-	pub fn create_entities(&self, entities: &mut Entities, components: &mut Components, player_entity: &mut uint, star_entities: &mut Vec<uint>)
+	pub fn create_entities(&self, entities: &mut Entities, components: &mut Components, player_appearance: i32, player_fuel: f64, player_entity: &mut uint, star_entities: &mut Vec<uint>)
 	{
-		*player_entity = create_player(2, self.start_x, self.start_y, entities, components);
+		*player_entity = create_player(player_appearance, player_fuel, self.start_x, self.start_y, entities, components);
 		for &(x, y, a) in self.stars.iter()
 		{
 			star_entities.push(create_star(x, y, a, entities, components));

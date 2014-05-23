@@ -17,7 +17,7 @@ use allegro_image::*;
 use ces::World;
 use ces::components::{State, MenuMode};
 use menu::{MenuInputSystem, MenuDrawSystem};
-use game::{GameInputSystem, GameLogicSystem, GameDrawSystem};
+use game::{GameInputSystem, GameLogicSystem, GameDrawSystem, GameUIDrawSystem};
 use player::{PlayerLogicSystem, PlayerInputSystem};
 use sprite::SpriteDrawSystem;
 use physics::PhysicsSystem;
@@ -113,6 +113,7 @@ fn game()
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
 	world.add_system(Draw, box SpriteDrawSystem::new());
+	world.add_system(Draw, box GameUIDrawSystem::new());
 	//~ world.add_system(Draw, box PlayerDrawSystem::new());
 	
 	let bmp_manager = ResourceManager::new();
