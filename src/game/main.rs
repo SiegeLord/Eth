@@ -1,11 +1,13 @@
 
-#![feature(macro_rules)]
-#![feature(globs)]
+#![feature(macro_rules, globs, phase)]
 
 extern crate collections;
+#[phase(syntax, link)]
 extern crate allegro5;
+extern crate allegro_dialog;
 
 use allegro5::*;
+use allegro_dialog::*;
 use ces::{World, Entities};
 use ces::components::{State, GameMode, MenuMode, Components, ComponentType};
 use ces::system::System;
@@ -106,7 +108,7 @@ simple_system!
 
 static MODE_ENTITY: uint = 0;
 
-fn main()
+fn game()
 {
 	let mut core = Core::init().unwrap();
 	core.install_keyboard();
@@ -174,5 +176,28 @@ fn main()
 			},
 			_ => ()
 		}
+	}
+}
+
+allegro_main!
+{
+	use std::task::try;
+    use std::any::AnyRefExt;
+
+	match try(game)
+	{
+		Err(e) =>
+		{
+			let err = e.as_ref::<&'static str>().map(|e| e.to_strbuf()).or_else(||
+			{
+				e.as_ref::<~str>().map(|e| e.to_strbuf())
+			}).or_else(||
+			{
+				e.as_ref::<StrBuf>().map(|e| e.clone())
+			}).unwrap_or("Unknown error!".to_strbuf());
+			
+			show_native_message_box(None, "Error!", "An error has occurred! Redirect stderr from the command line for more info.", err.as_slice(), Some("You make me sad."), MESSAGEBOX_ERROR);
+		}
+		Ok(_) => ()
 	}
 }
