@@ -1,4 +1,3 @@
-use allegro5::*;
 use ces::Entities;
 use ces::components::{Components, Location, OldLocation};
 use ces::components::ComponentType;

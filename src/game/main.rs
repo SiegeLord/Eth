@@ -18,8 +18,10 @@ use ces::World;
 use ces::components::{State, MenuMode};
 use menu::{MenuInputSystem, MenuDrawSystem};
 use game::{GameInputSystem, GameLogicSystem, GameDrawSystem};
-use player::{PlayerInputSystem, PlayerDrawSystem};
+use player::{PlayerLogicSystem, PlayerInputSystem};
+use sprite::SpriteDrawSystem;
 use physics::PhysicsSystem;
+use gravity::GravitySystem;
 use old_location::OldLocationSystem;
 use resource_manager::ResourceManager;
 
@@ -33,6 +35,8 @@ mod star_system;
 mod player;
 mod physics;
 mod old_location;
+mod sprite;
+mod gravity;
 
 #[repr(i32)]
 enum WorldEvent
@@ -102,11 +106,14 @@ fn game()
 	
 	world.add_system(Logic, box OldLocationSystem::new());
 	world.add_system(Logic, box GameLogicSystem::new());
-	world.add_system(Logic, box PhysicsSystem::new());
+	world.add_system(Logic, box GravitySystem::new());
+	world.add_system(Logic, box PlayerLogicSystem::new());
+	world.add_system(Logic, box PhysicsSystem::new()); // Must be last
 	
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
-	world.add_system(Draw, box PlayerDrawSystem::new());
+	world.add_system(Draw, box SpriteDrawSystem::new());
+	//~ world.add_system(Draw, box PlayerDrawSystem::new());
 	
 	let bmp_manager = ResourceManager::new();
 	let ui_font = font.load_bitmap_font("data/font.png").expect("Couldn't create built-in font from 'data/font.png'");
@@ -177,7 +184,7 @@ fn game()
 		get_state(&mut world).core.set_target_bitmap(&buffer);
 
 		let cur_time = get_state(&mut world).core.get_time();
-		get_state(&mut world).draw_interp = ((cur_time - offset - game_time) / DT) as f32;
+		get_state(&mut world).draw_interp = ((cur_time - offset - game_time) / DT) as f64;
 		world.update_systems(Draw);
 		
 		let c = get_state(&mut world).core.map_rgb_f(1.0, 0.0, 0.0);

@@ -48,6 +48,10 @@ simple_system!
 				     e.get_mut(&mut components.game_mode).unwrap())
 				};
 				entities.sched_remove(mode.player_entity);
+				for &star in mode.star_entities.iter()
+				{
+					entities.sched_remove(star);
+				}
 				MenuMode::new(state)
 			};
 			components.add(entity_idx, menu_mode, entities);

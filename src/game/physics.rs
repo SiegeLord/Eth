@@ -1,9 +1,8 @@
-use allegro5::*;
 use ces::Entities;
 use ces::components::{Components, Location, Velocity, Acceleration, Size};
 use ces::components::ComponentType;
 use ces::system::System;
-use {FIELD_WIDTH, FIELD_HEIGHT, MODE_ENTITY};
+use {FIELD_WIDTH, FIELD_HEIGHT};
 
 simple_system!
 (
@@ -13,7 +12,7 @@ simple_system!
 		
 		let l = e.get_mut(&mut components.location).unwrap();
 		let v = e.get_mut(&mut components.velocity).unwrap();
-		let a = e.get(&mut components.acceleration).unwrap();
+		let a = e.get_mut(&mut components.acceleration).unwrap();
 		let z = e.get(&mut components.size).unwrap();
 		let mut o = e.get_mut(&mut components.old_location);
 		
@@ -22,6 +21,9 @@ simple_system!
 		
 		l.x += v.vx;
 		l.y += v.vy;
+		
+		a.ax = 0.0;
+		a.ay = 0.0;
 
 		if l.x < 0.0
 		{
@@ -35,15 +37,15 @@ simple_system!
 			o.as_mut().map(|o| o.y = l.y);
 			v.vy = -v.vy;
 		}
-		if l.x > FIELD_WIDTH as f32 - z.w
+		if l.x > FIELD_WIDTH as f64 - z.w
 		{
-			l.x = FIELD_WIDTH as f32 - z.w;
+			l.x = FIELD_WIDTH as f64 - z.w;
 			o.as_mut().map(|o| o.x = l.x);
 			v.vx = -v.vx;
 		}
-		if l.y > FIELD_HEIGHT as f32 - z.h
+		if l.y > FIELD_HEIGHT as f64 - z.h
 		{
-			l.y = FIELD_HEIGHT as f32 - z.h;
+			l.y = FIELD_HEIGHT as f64 - z.h;
 			o.as_mut().map(|o| o.y = l.y);
 			v.vy = -v.vy;
 		}
