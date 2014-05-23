@@ -32,7 +32,6 @@ simple_system!
 		let mode_e = entities.get(MODE_ENTITY);
 		let e = entities.get(entity_idx);
 		let player = e.get_mut(&mut components.player).unwrap();
-		
 		let state = mode_e.get_mut(&mut components.state).unwrap();
 		
 		state.key_down.map(|k|

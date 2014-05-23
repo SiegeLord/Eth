@@ -130,7 +130,8 @@ fn game()
 		dh: bh,
 		dw: bw,
 		quit: false,
-		draw_interp: 0.0
+		draw_interp: 0.0,
+		paused: false,
 	};
 	
 	world.add_entity();
@@ -160,6 +161,7 @@ fn game()
 				},
 				KeyDown{keycode: k, ..} =>
 				{
+					get_state(&mut world).paused = false;
 					get_state(&mut world).key_down = Some(k);
 					world.update_systems(Input);
 				},
@@ -171,7 +173,10 @@ fn game()
 				TimerTick{count, ..} =>
 				{
 					game_time = count as f64 * DT;
-					world.update_systems(Logic);
+					if !get_state(&mut world).paused
+					{
+						world.update_systems(Logic);
+					}
 				},
 				_ => ()
 			}

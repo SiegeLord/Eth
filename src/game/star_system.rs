@@ -21,6 +21,7 @@ pub fn create_star(x: f64, y: f64, appearance: i32, entities: &mut Entities, com
 	e
 }
 
+#[deriving(Clone)]
 pub struct StarSystem
 {
 	start_x: f64,
@@ -66,5 +67,10 @@ impl StarSystem
 		{
 			star_entities.push(create_star(x, y, a, entities, components));
 		}
+	}
+
+	pub fn get_time_bonus(&self) -> f64
+	{
+		60.0
 	}
 }

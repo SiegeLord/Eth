@@ -68,6 +68,7 @@ impl GameMode
 		let mut player_entity = 0;
 		let mut star_entities = vec![];
 		sys.create_entities(entities, components, 1, 100.0, &mut player_entity, &mut star_entities);
+		let time_bonus = sys.get_time_bonus();
 		GameMode
 		{
 			star_system: sys,
@@ -75,7 +76,7 @@ impl GameMode
 			star_entities: star_entities,
 			score: score,
 			high_score: high_score,
-			time_bonus: 60.0,
+			time_bonus: time_bonus,
 		}
 	}
 }
@@ -112,7 +113,8 @@ component!(
 		dw: i32,
 		dh: i32,
 		quit: bool,
-		draw_interp: f64
+		draw_interp: f64,
+		paused: bool
 	}
 )
 

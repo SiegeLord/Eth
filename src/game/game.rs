@@ -25,6 +25,7 @@ simple_system!
 	GameInputSystem[GameMode, State]
 	{
 		let mut switch = false;
+		let mut reset = false;
 		{
 			let e = entities.get(entity_idx);
 			let state = e.get_mut(&mut components.state).unwrap();
@@ -37,30 +38,66 @@ simple_system!
 					{
 						switch = true
 					}
+					key::R => 
+					{
+						reset = true;
+					}
 					_ => ()
 				}
 			});
 		}
 		
+		if switch || reset
+		{
+			let mode = 
+			{
+				let e = entities.get(entity_idx);
+				e.get_mut(&mut components.game_mode).unwrap()
+			};
+			entities.sched_remove(mode.player_entity);
+			for &star in mode.star_entities.iter()
+			{
+				entities.sched_remove(star);
+			}
+		}
+
 		if switch
 		{
 			let menu_mode = 
 			{
-				let (state, mode) = 
+				let (state, _mode) = 
 				{
 					let e = entities.get(entity_idx);
 					(e.get_mut(&mut components.state).unwrap(),
 				     e.get_mut(&mut components.game_mode).unwrap())
 				};
-				entities.sched_remove(mode.player_entity);
-				for &star in mode.star_entities.iter()
-				{
-					entities.sched_remove(star);
-				}
 				MenuMode::new(state)
 			};
 			components.add(entity_idx, menu_mode, entities);
 			components.sched_remove::<GameMode>(entity_idx, entities);
+		}
+		else if reset
+		{
+			/* Man is this ugly */
+			let sys = 
+			{
+				let e = entities.get(entity_idx);
+				e.get(&components.game_mode).unwrap().star_system.clone()
+			};
+			let mut player_entity = 0;
+			let mut star_entities = vec![];
+			sys.create_entities(entities, components, 1, 100.0, &mut player_entity, &mut star_entities);
+			
+			let (state, mode) = 
+			{
+				let e = entities.get(entity_idx);
+				(e.get_mut(&mut components.state).unwrap(),
+				 e.get_mut(&mut components.game_mode).unwrap())
+			};
+			mode.player_entity = player_entity;
+			mode.star_entities = star_entities;
+			mode.time_bonus = sys.get_time_bonus();
+			state.paused = true;
 		}
 	}
 )
@@ -89,7 +126,7 @@ simple_system!
 		let player = &player_e.get(&components.player).unwrap();
 		
 		let hx = (state.dw as f32) / 2.0;
-		//~ let hy = (state.dh as f32) / 2.0;
+		let hy = (state.dh as f32) / 2.0;
 
 		let orange = core.map_rgb_f(0.8, 0.7, 0.3);
 		let white = core.map_rgb_f(1.0, 1.0, 1.0);
@@ -121,5 +158,10 @@ simple_system!
 		
 		core.draw_text(ui_font, orange, hx, 20.0, AlignRight, "BONUS:");
 		core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32));
+		
+		if state.paused
+		{
+			core.draw_text(ui_font, white, hx, hy, AlignCentre, "PAUSED");
+		}
 	}
 )
