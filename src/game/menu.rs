@@ -99,7 +99,7 @@ simple_system!
 				e.get(&components.state).unwrap().appearance
 			};
 			{
-				let game_mode = GameMode::new("levels/beth.cfg", "start", 0, 1000, 300.0, 50.0, appearance, entities, components);
+				let game_mode = GameMode::new("levels/beth.cfg", "start", 0, 1000, 100.0, 50.0, appearance, entities, components);
 				components.add(entity_idx, game_mode, entities);
 				components.sched_remove::<MenuMode>(entity_idx, entities);
 			}

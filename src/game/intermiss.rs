@@ -4,7 +4,10 @@ use allegro_font::*;
 use ces::Entities;
 use ces::components::{State, GameMode, MenuMode, IntermissMode, Components, ComponentType};
 use ces::system::System;
-use DT;
+
+static NUM_ENTRIES: uint = 3;
+static FUEL_COST: i32 = 45000;
+static CAMERA_COST: i32 = 30000;
 
 simple_system!
 (
@@ -12,7 +15,40 @@ simple_system!
 	{
 		let e = entities.get(entity_idx);
 		let mode = e.get_mut(&mut components.intermiss_mode).unwrap();
-		let state = e.get_mut(&mut components.state).unwrap();
+		
+		let rate = 100;
+		
+		if mode.time_bonus > 0
+		{
+			mode.time_bonus -= rate;
+			mode.disp_score += rate;
+		}
+		if mode.fuel_bonus > 0
+		{
+			mode.fuel_bonus -= rate;
+			mode.disp_score += rate;
+		}
+		if mode.completion_bonus > 0
+		{
+			mode.completion_bonus -= rate;
+			mode.disp_score += rate;
+		}
+		if mode.time_bonus > 0
+		{
+			mode.time_bonus -= rate;
+			mode.disp_score += rate;
+		}
+		if mode.cost > 0
+		{
+			mode.cost -= rate;
+			mode.disp_score -= rate;
+		}
+
+		if mode.disp_score > mode.disp_high_score
+		{
+			mode.disp_high_score = mode.disp_score;
+		}
+
 	}
 )
 
@@ -25,7 +61,7 @@ simple_system!
 		{
 			let e = entities.get(entity_idx);
 			let state = e.get_mut(&mut components.state).unwrap();
-			let intermiss_mode = e.get_mut(&mut components.intermiss_mode).unwrap();
+			let mode = e.get_mut(&mut components.intermiss_mode).unwrap();
 			
 			state.key_down.map(|k|
 			{
@@ -35,12 +71,60 @@ simple_system!
 					{
 						switch = true
 					}
-					key::Space =>
+					key::Space | key::Enter =>
 					{
-						if intermiss_mode.next.is_some()
+						if mode.next.is_some()
 						{
-							next = true;
+							match mode.cur_sel
+							{
+								0 => next = true,
+								1 =>
+								{
+									if mode.score > FUEL_COST
+									{
+										mode.score -= FUEL_COST;
+										mode.cost += FUEL_COST;
+										mode.fuel += 25.0;
+									}
+								}
+								2 =>
+								{
+									if mode.score > CAMERA_COST
+									{
+										mode.score -= CAMERA_COST;
+										mode.cost += CAMERA_COST;
+										mode.range += 5.0;
+									}
+								}
+								_ => ()
+							}
 						}
+						else
+						{
+							switch = true;
+						}
+					}
+					key::Up =>
+					{
+						mode.cur_sel = if mode.cur_sel == 0
+						{
+							NUM_ENTRIES - 1
+						}
+						else
+						{
+							mode.cur_sel - 1
+						};
+					}
+					key::Down =>
+					{
+						mode.cur_sel = if mode.cur_sel == NUM_ENTRIES - 1
+						{
+							0
+						}
+						else
+						{
+							mode.cur_sel + 1
+						};
 					}
 					_ => ()
 				}
@@ -95,9 +179,71 @@ simple_system!
 	IntermissDrawSystem[IntermissMode, State]
 	{
 		let e = entities.get(entity_idx);
-		let core = &e.get(&mut components.state).unwrap().core;
-
-		core.clear_to_color(core.map_rgb_f(0.2, 0.0, 0.0));
+		let state = &mut e.get_mut(&mut components.state).unwrap();
+		let core = &state.core;
+		let ui_font = &state.ui_font;
+		let mode = &e.get(&components.intermiss_mode).unwrap();
+		
+		core.clear_to_color(core.map_rgb_f(0.0, 0.0, 0.0));
+		
+		let hx = (state.dw as f32) / 2.0;
+		let hy = (state.dh as f32) / 2.0;
+		
+		let orange = core.map_rgb_f(0.8, 0.7, 0.3);
+		let white = core.map_rgb_f(1.0, 1.0, 1.0);
+		let gray = core.map_rgb_f(0.7, 0.7, 0.7);
+		let blue = core.map_rgb_f(0.2, 0.6, 0.9);
+		let green = core.map_rgb_f(0.3, 0.8, 0.1);
+		let red = core.map_rgb_f(0.9, 0.2, 0.1);
+		
+		core.draw_text(ui_font, orange, hx, hy - 100.0, AlignRight, "TIME BONUS:");
+		core.draw_text(ui_font, orange, hx, hy - 90.0, AlignRight, "FUEL BONUS:");
+		core.draw_text(ui_font, orange, hx, hy - 80.0, AlignRight, "FINISH BONUS:");
+		core.draw_text(ui_font, orange, hx, hy - 70.0, AlignRight, "COST:");
+		core.draw_text(ui_font, orange, hx, hy - 50.0, AlignRight, "SCORE:");
+		core.draw_text(ui_font, orange, hx, hy - 40.0, AlignRight, "HIGH SCORE:");
+		
+		if mode.disp_high_score == mode.disp_score
+		{
+			core.draw_text(ui_font, white, hx, hy, AlignCentre, "NEW HIGH SCORE!");
+		}
+		
+		core.draw_text(ui_font, green, hx, hy - 100.0, AlignLeft, format!(" {}", mode.time_bonus).as_slice());
+		core.draw_text(ui_font, green, hx, hy - 90.0, AlignLeft, format!(" {}", mode.fuel_bonus).as_slice());
+		core.draw_text(ui_font, green, hx, hy - 80.0, AlignLeft, format!(" {}", mode.completion_bonus).as_slice());
+		core.draw_text(ui_font, red, hx, hy - 70.0, AlignLeft, format!(" {}", mode.cost).as_slice());
+		core.draw_text(ui_font, white, hx, hy - 50.0, AlignLeft, format!(" {}", mode.disp_score).as_slice());
+		core.draw_text(ui_font, gray, hx, hy - 40.0, AlignLeft, format!(" {}", mode.disp_high_score).as_slice());
+		
+		if mode.next.is_some()
+		{
+			let spacing = 16.0;
+			let mut y = hy + 32.0;		
+			
+			let fs = format!("BUY FUEL TANK ({})", FUEL_COST);
+			let cs = format!("BUY BETTER CAMERA ({})", CAMERA_COST);
+			let text = ["CONTINUE", fs.as_slice(), cs.as_slice()];
+			
+			for entry in range(0u, NUM_ENTRIES)
+			{
+				let color = if entry == mode.cur_sel
+				{
+					white
+				}
+				else
+				{
+					blue
+				};
+				
+				core.draw_text(ui_font, color, hx, y, AlignCentre, text[entry]);
+				
+				y += spacing;
+			}
+		}
+		else
+		{
+			core.draw_text(ui_font, white, hx, hy, AlignCentre, "ARC COMPLETE!");
+		}
 	}
 )
 

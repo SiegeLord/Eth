@@ -8,6 +8,7 @@ use resource_manager::ResourceManager;
 use std::rc::Rc;
 use star_system::StarSystem;
 use menu::NUM_APPEARANCES;
+use std::cmp::max;
 
 component!(
 	Location, location
@@ -75,27 +76,50 @@ component!(
 	{
 		set: StrBuf,
 		next: Option<StrBuf>,
-		time_bonus: f64,
 		score: i32,
 		high_score: i32,
+		fuel: f64,
 		max_fuel: f64,
-		range: f64
+		range: f64,
+		disp_score: i32,
+		time_bonus: i32,
+		fuel_bonus: i32,
+		completion_bonus: i32,
+		cur_sel: uint,
+		cost: i32,
+		disp_high_score: i32
 	}
 )
 
 impl IntermissMode
 {
-	pub fn new(set: &str, next: Option<StrBuf>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64) -> IntermissMode
+	pub fn new(set: &str, next: Option<StrBuf>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64, fuel: f64) -> IntermissMode
 	{
+		let old_high_score = high_score;
+		let old_score = score;
+		let fuel_bonus = (fuel as i32) * 100;
+		let time_bonus = time_bonus as i32 * 100;
+		let completion_bonus = 50 * 100;
+		let score = score + time_bonus + fuel_bonus + completion_bonus;
+		
+		let high_score = max(score, high_score);
+
 		IntermissMode
 		{
 			set: set.to_strbuf(),
 			next: next,
-			time_bonus: time_bonus,
 			score: score,
 			high_score: high_score,
 			max_fuel: max_fuel,
 			range: range,
+			fuel: fuel,
+			disp_score: old_score,
+			fuel_bonus: fuel_bonus,
+			time_bonus: time_bonus,
+			completion_bonus: completion_bonus,
+			cur_sel: 0,
+			cost: 0,
+			disp_high_score: old_high_score
 		}
 	}
 }

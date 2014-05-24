@@ -100,15 +100,17 @@ simple_system!
 		{
 			let intermiss_mode = 
 			{
-				let (state, mode) = 
+				let (state, mode, fuel) = 
 				{
 					let e = entities.get(entity_idx);
-					(e.get_mut(&mut components.state).unwrap(),
-				     e.get_mut(&mut components.game_mode).unwrap())
+					let game_mode = e.get_mut(&mut components.game_mode).unwrap();
+					let player_e = entities.get(game_mode.player_entity);
+					let fuel = player_e.get(&components.player).unwrap().fuel;
+					(e.get_mut(&mut components.state).unwrap(), game_mode, fuel)
 				};
 				state.stopped = false;
 				IntermissMode::new(mode.set.as_slice(), mode.star_system.get_next().map(|s| s.clone()),
-				                   mode.time_bonus, mode.score, mode.high_score, mode.max_fuel, mode.range)
+				                   mode.time_bonus, mode.score, mode.high_score, mode.max_fuel, mode.range, fuel)
 			};
 			components.add(entity_idx, intermiss_mode, entities);
 			components.sched_remove::<GameMode>(entity_idx, entities);
@@ -174,10 +176,8 @@ simple_system!
 
 			let orange = core.map_rgb_f(0.8, 0.7, 0.3);
 			let white = core.map_rgb_f(1.0, 1.0, 1.0);
-			let gray = core.map_rgb_f(0.7, 0.7, 0.7);
 			let blue = core.map_rgb_f(0.2, 0.6, 0.9);
 			let green = core.map_rgb_f(0.3, 0.8, 0.1);
-		
 		
 			core.draw_text(ui_font, orange, 20.0, 20.0, AlignLeft, "FUEL:");
 			
@@ -198,10 +198,8 @@ simple_system!
 			core.draw_text(ui_font, color, 65.0, 20.0, AlignLeft, format!("{}", fuel).as_slice());
 		
 		
-			core.draw_text(ui_font, orange, state.dw as f32 - 170.0, 20.0, AlignLeft, "HIGH SCORE:");
-			core.draw_text(ui_font, gray, state.dw as f32 - 75.0, 20.0, AlignLeft, format!("{}", mode.high_score as i32).as_slice());
-			core.draw_text(ui_font, orange, state.dw as f32 - 130.0, 30.0, AlignLeft, "SCORE:");
-			core.draw_text(ui_font, white, state.dw as f32 - 75.0, 30.0, AlignLeft, format!("{}", mode.score as i32).as_slice());
+			core.draw_text(ui_font, orange, state.dw as f32 - 130.0, 20.0, AlignLeft, "SCORE:");
+			core.draw_text(ui_font, white, state.dw as f32 - 75.0, 20.0, AlignLeft, format!("{}", mode.score as i32).as_slice());
 			
 			core.draw_text(ui_font, orange, hx, 20.0, AlignRight, "BONUS:");
 			core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32).as_slice());
