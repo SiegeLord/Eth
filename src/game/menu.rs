@@ -65,7 +65,7 @@ simple_system!
 		if switch
 		{
 			{
-				let game_mode = GameMode::new("levels/beth.cfg", 0, 1000, entities, components);
+				let game_mode = GameMode::new("levels/beth.cfg", 0, 1000, 300.0, 50.0, 0, entities, components);
 				components.add(entity_idx, game_mode, entities);
 				components.sched_remove::<MenuMode>(entity_idx, entities);
 			}

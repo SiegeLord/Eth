@@ -22,6 +22,7 @@ use player::{PlayerLogicSystem, PlayerInputSystem};
 use sprite::SpriteDrawSystem;
 use physics::PhysicsSystem;
 use gravity::GravitySystem;
+use target::{TargetInputSystem, TargetReticleDrawSystem};
 use old_location::OldLocationSystem;
 use resource_manager::ResourceManager;
 
@@ -37,6 +38,7 @@ mod physics;
 mod old_location;
 mod sprite;
 mod gravity;
+mod target;
 
 #[repr(i32)]
 enum WorldEvent
@@ -68,8 +70,8 @@ fn game()
 {
 	let root = toml::parse_from_file("options.cfg").ok().expect("Could not load/parse 'options.cfg'");
 	
-	let manual_vsync = root.lookup("game.manual_vsync").map(|v| v.get_bool().unwrap_or(false)).unwrap_or(false);
-	let fullscreen = root.lookup("game.fullscreen").map(|v| v.get_bool().unwrap_or(false)).unwrap_or(false);
+	let manual_vsync = root.lookup("game.manual_vsync").map(|v| v.get_bool().unwrap()).unwrap_or(false);
+	let fullscreen = root.lookup("game.fullscreen").map(|v| v.get_bool().unwrap()).unwrap_or(false);
 	
 	let mut core = Core::init().unwrap();
 	let font = FontAddon::init(&core).expect("Could not init font addon");
@@ -103,6 +105,7 @@ fn game()
 	world.add_system(Input, box GameInputSystem::new());
 	world.add_system(Input, box MenuInputSystem::new());
 	world.add_system(Input, box PlayerInputSystem::new());
+	world.add_system(Input, box TargetInputSystem::new());
 	
 	world.add_system(Logic, box OldLocationSystem::new());
 	world.add_system(Logic, box GameLogicSystem::new());
@@ -113,6 +116,7 @@ fn game()
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
 	world.add_system(Draw, box SpriteDrawSystem::new());
+	world.add_system(Draw, box TargetReticleDrawSystem::new());
 	world.add_system(Draw, box GameUIDrawSystem::new());
 	//~ world.add_system(Draw, box PlayerDrawSystem::new());
 	

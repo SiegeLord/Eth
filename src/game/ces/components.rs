@@ -53,30 +53,41 @@ component!(
 	{
 		star_system: StarSystem,
 		player_entity: uint,
-		star_entities: Vec<uint>,
+		other_entities: Vec<uint>,
 		time_bonus: f64,
 		score: i32,
-		high_score: i32
+		high_score: i32,
+		max_fuel: f64,
+		range: f64,
+		targets: i32,
+		intro_text_pos: f32,
+		appearance: i32
 	}
 )
 
 impl GameMode
 {
-	pub fn new(star_system: &str, score: i32, high_score: i32, entities: &mut Entities, components: &mut Components) -> GameMode
+	pub fn new(star_system: &str, score: i32, high_score: i32, max_fuel: f64, range: f64, appearance: i32, entities: &mut Entities, components: &mut Components) -> GameMode
 	{
 		let sys = StarSystem::new(star_system);
 		let mut player_entity = 0;
-		let mut star_entities = vec![];
-		sys.create_entities(entities, components, 1, 100.0, &mut player_entity, &mut star_entities);
+		let mut other_entities = vec![];
+		sys.create_entities(entities, components, appearance, max_fuel, &mut player_entity, &mut other_entities);
 		let time_bonus = sys.get_time_bonus();
+		let targets = sys.get_num_targets();
 		GameMode
 		{
 			star_system: sys,
 			player_entity: player_entity,
-			star_entities: star_entities,
+			other_entities: other_entities,
 			score: score,
 			high_score: high_score,
 			time_bonus: time_bonus,
+			max_fuel: max_fuel,
+			range: range,
+			targets: targets,
+			intro_text_pos: 0.0,
+			appearance: appearance
 		}
 	}
 }
@@ -169,6 +180,26 @@ component!(
 	}
 )
 
+component!(
+	Target, target
+	{
+		reticle_near: Rc<Bitmap>,
+		reticle_far: Rc<Bitmap>
+	}
+)
+
+impl Target
+{
+	pub fn new(state: &mut State) -> Target
+	{
+		Target
+		{
+			reticle_near: state.bmp_manager.load("data/reticle.png", &state.core).unwrap(),
+			reticle_far: state.bmp_manager.load("data/reticle2.png", &state.core).unwrap()
+		}
+	}
+}
+
 components!(
 	Location, location;         // 1
 	Velocity, velocity;         // 2
@@ -180,7 +211,8 @@ components!(
 	Size, size;                 // 8
 	OldLocation, old_location;  // 9
 	Sprite, sprite;             // 10
-	Mass, mass                  // 11
+	Mass, mass;                 // 11
+	Target, target              // 12
 )
 //                                 ^
-pub static NUM_COMPONENTS: uint =  11;
+pub static NUM_COMPONENTS: uint =  12;

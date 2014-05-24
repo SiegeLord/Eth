@@ -12,11 +12,15 @@ simple_system!
 	{
 		let e = entities.get(entity_idx);
 		let mode = &mut e.get_mut(&mut components.game_mode).unwrap();
-		mode.time_bonus -= DT;
-		if mode.time_bonus < 0.0
+		if mode.targets > 0
 		{
-			mode.time_bonus = 0.0;
+			mode.time_bonus -= DT;
+			if mode.time_bonus < 0.0
+			{
+				mode.time_bonus = 0.0;
+			}
 		}
+		mode.intro_text_pos -= 1.0;
 	}
 )
 
@@ -55,7 +59,7 @@ simple_system!
 				e.get_mut(&mut components.game_mode).unwrap()
 			};
 			entities.sched_remove(mode.player_entity);
-			for &star in mode.star_entities.iter()
+			for &star in mode.other_entities.iter()
 			{
 				entities.sched_remove(star);
 			}
@@ -79,14 +83,15 @@ simple_system!
 		else if reset
 		{
 			/* Man is this ugly */
-			let sys = 
+			let (old_appearance, sys) = 
 			{
 				let e = entities.get(entity_idx);
-				e.get(&components.game_mode).unwrap().star_system.clone()
+				let game_mode = e.get(&components.game_mode).unwrap();
+				(game_mode.appearance, game_mode.star_system.clone())
 			};
 			let mut player_entity = 0;
-			let mut star_entities = vec![];
-			sys.create_entities(entities, components, 1, 100.0, &mut player_entity, &mut star_entities);
+			let mut other_entities = vec![];
+			sys.create_entities(entities, components, old_appearance, 100.0, &mut player_entity, &mut other_entities);
 			
 			let (state, mode) = 
 			{
@@ -95,8 +100,10 @@ simple_system!
 				 e.get_mut(&mut components.game_mode).unwrap())
 			};
 			mode.player_entity = player_entity;
-			mode.star_entities = star_entities;
+			mode.other_entities = other_entities;
 			mode.time_bonus = sys.get_time_bonus();
+			mode.targets = sys.get_num_targets();
+			mode.intro_text_pos = 0.0;
 			state.paused = true;
 		}
 	}
@@ -118,9 +125,9 @@ simple_system!
 	GameUIDrawSystem[GameMode, State]
 	{
 		let e = entities.get(entity_idx);
-		let state = &e.get(&components.state).unwrap();
+		let state = &mut e.get_mut(&mut components.state).unwrap();
 		let core = &state.core;
-		let ui_font = &e.get(&components.state).unwrap().ui_font;
+		let ui_font = &state.ui_font;
 		let mode = &e.get(&components.game_mode).unwrap();
 		let player_e = entities.get(mode.player_entity);
 		let player = &player_e.get(&components.player).unwrap();
@@ -132,9 +139,10 @@ simple_system!
 		let white = core.map_rgb_f(1.0, 1.0, 1.0);
 		let gray = core.map_rgb_f(0.7, 0.7, 0.7);
 		let blue = core.map_rgb_f(0.2, 0.6, 0.9);
-
-		core.draw_text(ui_font, orange, 20.0, 20.0, AlignLeft, "FUEL:");
+		let green = core.map_rgb_f(0.3, 0.8, 0.1);
 		
+		core.draw_text(ui_font, orange, 20.0, 20.0, AlignLeft, "FUEL:");
+			
 		let fuel = player.fuel as i32;
 		let color = if fuel < 50
 		{
@@ -146,7 +154,7 @@ simple_system!
 		}
 		else
 		{
-			core.map_rgb_f(0.3, 0.8, 0.1)
+			green
 		};
 		
 		core.draw_text(ui_font, color, 65.0, 20.0, AlignLeft, format!("{}", player.fuel as i32));
@@ -159,9 +167,26 @@ simple_system!
 		core.draw_text(ui_font, orange, hx, 20.0, AlignRight, "BONUS:");
 		core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32));
 		
-		if state.paused
+		if mode.targets <= 0
 		{
-			core.draw_text(ui_font, white, hx, hy, AlignCentre, "PAUSED");
+			state.paused = true;
+			core.draw_text(ui_font, green, hx, hy - 10.0, AlignCentre, "MISSION ACCOMPLISHED");
+			core.draw_text(ui_font, orange, hx, hy + 10.0, AlignCentre, "PRESS 'SPACE' TO CONTINUE");
+		}
+		else
+		{			
+			core.draw_text(ui_font, orange, hx, (state.dh as f32) - 30.0, AlignRight, "TARGETS:");
+			core.draw_text(ui_font, white, hx, (state.dh as f32) - 30.0, AlignLeft, format!(" {}", mode.targets));
+			
+			if state.paused
+			{
+				core.draw_text(ui_font, white, hx, hy, AlignCentre, "PAUSED");
+			}
+			
+			mode.star_system.get_intro_text().map(|text|
+			{
+				core.draw_text(ui_font, white, hx + mode.intro_text_pos, (state.dh as f32) - 60.0, AlignCentre, text.as_slice());
+			});
 		}
 	}
 )

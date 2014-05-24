@@ -5,7 +5,7 @@ use ces::components::ComponentType;
 use ces::system::System;
 use MODE_ENTITY;
 
-pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, entities: &mut Entities, components: &mut Components) -> uint
+pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, vx: f64, vy: f64, entities: &mut Entities, components: &mut Components) -> uint
 {
 	let sprite = 
 	{
@@ -16,7 +16,7 @@ pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, entities: &mut 
 	let e = entities.add();
 	components.add(e, Location{ x: x, y: y }, entities);
 	components.add(e, OldLocation{ x: x, y: y }, entities);
-	components.add(e, Velocity{ vx: 0.0, vy: 0.0 }, entities);
+	components.add(e, Velocity{ vx: vx, vy: vy }, entities);
 	components.add(e, Acceleration{ ax: 0.0, ay: 0.0 }, entities);
 	components.add(e, Size{ w: 16.0, h: 16.0 }, entities);
 	components.add(e, Mass{ mass: 0.0 }, entities);
