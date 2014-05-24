@@ -71,8 +71,39 @@ component!(
 )
 
 component!(
+	IntermissMode, intermiss_mode
+	{
+		set: StrBuf,
+		next: Option<StrBuf>,
+		time_bonus: f64,
+		score: i32,
+		high_score: i32,
+		max_fuel: f64,
+		range: f64
+	}
+)
+
+impl IntermissMode
+{
+	pub fn new(set: &str, next: Option<StrBuf>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64) -> IntermissMode
+	{
+		IntermissMode
+		{
+			set: set.to_strbuf(),
+			next: next,
+			time_bonus: time_bonus,
+			score: score,
+			high_score: high_score,
+			max_fuel: max_fuel,
+			range: range,
+		}
+	}
+}
+
+component!(
 	GameMode, game_mode
 	{
+		set: StrBuf,
 		star_system: StarSystem,
 		player_entity: uint,
 		other_entities: Vec<uint>,
@@ -88,9 +119,9 @@ component!(
 
 impl GameMode
 {
-	pub fn new(star_system: &str, score: i32, high_score: i32, max_fuel: f64, range: f64, appearance: i32, entities: &mut Entities, components: &mut Components) -> GameMode
+	pub fn new(set: &str, sys: &str, score: i32, high_score: i32, max_fuel: f64, range: f64, appearance: i32, entities: &mut Entities, components: &mut Components) -> GameMode
 	{
-		let sys = StarSystem::new(star_system);
+		let sys = StarSystem::new(set, sys);
 		let mut player_entity = 0;
 		let mut other_entities = vec![];
 		sys.create_entities(entities, components, appearance, max_fuel, &mut player_entity, &mut other_entities);
@@ -98,6 +129,7 @@ impl GameMode
 		let targets = sys.get_num_targets();
 		GameMode
 		{
+			set: set.to_strbuf(),
 			star_system: sys,
 			player_entity: player_entity,
 			other_entities: other_entities,
@@ -229,21 +261,22 @@ impl Target
 }
 
 components!(
-	Location, location;         // 1
-	Velocity, velocity;         // 2
-	Acceleration, acceleration; // 3
-	GameMode, game_mode;        // 4
-	MenuMode, menu_mode;        // 5
-	State, state;               // 6
-	Player, player;             // 7
-	Size, size;                 // 8
-	OldLocation, old_location;  // 9
-	Sprite, sprite;             // 10
-	Mass, mass;                 // 11
-	Target, target;             // 12
-	Solid, solid;               // 13
-	Hole, hole;                 // 14
-	Switchable, switchable      // 15
+	Location, location;           // 1
+	Velocity, velocity;           // 2
+	Acceleration, acceleration;   // 3
+	GameMode, game_mode;          // 4
+	MenuMode, menu_mode;          // 5
+	State, state;                 // 6
+	Player, player;               // 7
+	Size, size;                   // 8
+	OldLocation, old_location;    // 9
+	Sprite, sprite;               // 10
+	Mass, mass;                   // 11
+	Target, target;               // 12
+	Solid, solid;                 // 13
+	Hole, hole;                   // 14
+	Switchable, switchable;       // 15
+	IntermissMode, intermiss_mode // 16
 )
-//                                 ^
-pub static NUM_COMPONENTS: uint =  15;
+//                                   ^
+pub static NUM_COMPONENTS: uint =    16;

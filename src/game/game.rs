@@ -2,7 +2,7 @@ use allegro5::*;
 use allegro_font::*;
 
 use ces::Entities;
-use ces::components::{State, GameMode, MenuMode, Components, ComponentType};
+use ces::components::{State, GameMode, MenuMode, IntermissMode, Components, ComponentType};
 use ces::system::System;
 use DT;
 
@@ -36,9 +36,11 @@ simple_system!
 	{
 		let mut switch = false;
 		let mut reset = false;
+		let mut next = false;
 		{
 			let e = entities.get(entity_idx);
 			let state = e.get_mut(&mut components.state).unwrap();
+			let game_mode = e.get_mut(&mut components.game_mode).unwrap();
 			
 			state.key_down.map(|k|
 			{
@@ -52,12 +54,19 @@ simple_system!
 					{
 						reset = true;
 					}
+					key::Space =>
+					{
+						if game_mode.targets == 0
+						{
+							next = true;
+						}
+					}
 					_ => ()
 				}
 			});
 		}
 		
-		if switch || reset
+		if switch || reset || next
 		{
 			let mode = 
 			{
@@ -85,6 +94,23 @@ simple_system!
 				MenuMode::new(state)
 			};
 			components.add(entity_idx, menu_mode, entities);
+			components.sched_remove::<GameMode>(entity_idx, entities);
+		}
+		else if next
+		{
+			let intermiss_mode = 
+			{
+				let (state, mode) = 
+				{
+					let e = entities.get(entity_idx);
+					(e.get_mut(&mut components.state).unwrap(),
+				     e.get_mut(&mut components.game_mode).unwrap())
+				};
+				state.stopped = false;
+				IntermissMode::new(mode.set.as_slice(), mode.star_system.get_next().map(|s| s.clone()),
+				                   mode.time_bonus, mode.score, mode.high_score, mode.max_fuel, mode.range)
+			};
+			components.add(entity_idx, intermiss_mode, entities);
 			components.sched_remove::<GameMode>(entity_idx, entities);
 		}
 		else if reset

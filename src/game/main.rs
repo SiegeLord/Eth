@@ -19,6 +19,7 @@ use ces::World;
 use ces::components::{State, MenuMode};
 use menu::{MenuInputSystem, MenuDrawSystem};
 use game::{GameInputSystem, GameLogicSystem, GameDrawSystem, GameUIDrawSystem};
+use intermiss::{IntermissInputSystem, IntermissLogicSystem, IntermissDrawSystem};
 use player::{PlayerLogicSystem, PlayerInputSystem};
 use sprite::SpriteDrawSystem;
 use physics::PhysicsSystem;
@@ -44,6 +45,7 @@ mod gravity;
 mod target;
 mod collision;
 mod easter;
+mod intermiss;
 
 #[repr(i32)]
 enum WorldEvent
@@ -107,12 +109,14 @@ fn game()
 
 	let mut world = World::new();
 	
+	world.add_system(Input, box IntermissInputSystem::new());
 	world.add_system(Input, box GameInputSystem::new());
 	world.add_system(Input, box MenuInputSystem::new());
 	world.add_system(Input, box PlayerInputSystem::new());
 	world.add_system(Input, box TargetInputSystem::new());
 	
 	world.add_system(Logic, box OldLocationSystem::new());
+	world.add_system(Logic, box IntermissLogicSystem::new());
 	world.add_system(Logic, box GameLogicSystem::new());
 	world.add_system(Logic, box GravitySystem::new());
 	world.add_system(Logic, box PlayerLogicSystem::new());
@@ -120,6 +124,7 @@ fn game()
 	world.add_system(Logic, box EasterSystem::new());
 	world.add_system(Logic, box PhysicsSystem::new()); // Must be last
 	
+	world.add_system(Draw, box IntermissDrawSystem::new());
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
 	world.add_system(Draw, box SpriteDrawSystem::new());

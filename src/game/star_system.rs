@@ -51,14 +51,17 @@ pub struct StarSystem
 	stars: Vec<(f64, f64, i32)>,
 	targets: Vec<(f64, f64, i32)>,
 	holes: Vec<(f64, f64)>,
-	intro_text: Option<StrBuf>
+	intro_text: Option<StrBuf>,
+	next: Option<StrBuf>,
 }
 
 impl StarSystem
 {
-	pub fn new(name: &str) -> StarSystem
+	pub fn new(set: &str, name: &str) -> StarSystem
 	{
-		let root = toml::parse_from_file(name).ok().expect(format!("Could not load/parse '{}'", name));
+		let root = toml::parse_from_file(set).ok().expect(format!("Could not load/parse '{}'", set));
+		
+		let root = root.lookup(name).unwrap();
 		
 		let start_pos = root.lookup("start_pos").unwrap();
 		
@@ -71,6 +74,7 @@ impl StarSystem
 		let start_vy = start_vel.lookup_vec(1).unwrap().get_float().unwrap() as f64;
 		
 		let intro_text = root.lookup("intro_text").map(|v| v.get_str().unwrap()).map(|s| s.clone());
+		let next = root.lookup("next").map(|v| v.get_str().unwrap()).map(|s| s.clone());
 		
 		let mut stars = vec![];
 		root.lookup("stars").map(|v|
@@ -117,6 +121,7 @@ impl StarSystem
 			targets: targets,
 			intro_text: intro_text,
 			holes: holes,
+			next: next,
 		}
 	}
 
@@ -152,5 +157,10 @@ impl StarSystem
 	pub fn get_intro_text<'l>(&'l self) -> Option<&'l StrBuf>
 	{
 		self.intro_text.as_ref()
+	}
+	
+	pub fn get_next<'l>(&'l self) -> Option<&'l StrBuf>
+	{
+		self.next.as_ref()
 	}
 }
