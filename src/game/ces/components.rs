@@ -9,6 +9,7 @@ use std::rc::Rc;
 use star_system::StarSystem;
 use menu::NUM_APPEARANCES;
 use std::cmp::max;
+use score::save_high_score;
 
 component!(
 	Location, location
@@ -103,6 +104,10 @@ impl IntermissMode
 		let score = score + time_bonus + fuel_bonus + completion_bonus;
 		
 		let high_score = max(score, high_score);
+		if high_score != old_high_score
+		{
+			save_high_score(set, high_score);
+		}
 
 		IntermissMode
 		{

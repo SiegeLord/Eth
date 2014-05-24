@@ -5,6 +5,7 @@ use allegro_font::*;
 use ces::Entities;
 use ces::components::{State, GameMode, MenuMode, Components, ComponentType};
 use ces::system::System;
+use score::load_high_score;
 
 static NUM_ENTRIES: uint = 4;
 pub static NUM_APPEARANCES: i32 = 3;
@@ -99,7 +100,7 @@ simple_system!
 				e.get(&components.state).unwrap().appearance
 			};
 			{
-				let game_mode = GameMode::new("levels/beth.cfg", "start", 0, 1000, 100.0, 50.0, appearance, entities, components);
+				let game_mode = GameMode::new("levels/beth.cfg", "start", 0, load_high_score("levels/beth.cfg"), 100.0, 50.0, appearance, entities, components);
 				components.add(entity_idx, game_mode, entities);
 				components.sched_remove::<MenuMode>(entity_idx, entities);
 			}
