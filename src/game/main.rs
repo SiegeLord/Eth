@@ -46,7 +46,6 @@ mod target;
 mod collision;
 mod easter;
 mod intermiss;
-mod score;
 
 #[repr(i32)]
 enum WorldEvent
@@ -151,6 +150,7 @@ fn game()
 		paused: false,
 		stopped: false,
 		appearance: 0,
+		set_name: "".to_strbuf(),
 	};
 	
 	world.add_entity();

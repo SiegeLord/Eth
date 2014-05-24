@@ -242,7 +242,7 @@ simple_system!
 		}
 		else
 		{
-			core.draw_text(ui_font, white, hx, hy + 20.0, AlignCentre, "ARC COMPLETE!");
+			core.draw_text(ui_font, white, hx, hy + 20.0, AlignCentre, format!("{} COMPLETE!", state.set_name).as_slice());
 		}
 	}
 )

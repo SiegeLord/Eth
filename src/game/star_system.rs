@@ -5,6 +5,50 @@ use ces::Entities;
 use ces::components::{Components, Sprite, Location, Size, OldLocation, Mass, Solid, Hole};
 use MODE_ENTITY;
 
+use std::io::File;
+use std::io::fs::readdir;
+
+pub fn save_high_score(set: &str, score: i32)
+{
+	let root = toml::parse_from_file(set).ok().expect(format!("Could not load/parse '{}'", set));
+	let file_name = root.lookup("score_file").unwrap().get_str().unwrap();
+	let mut file = File::create(&Path::new(file_name.as_slice())).unwrap();
+	file.write_le_i32(score).unwrap();
+	file.flush().unwrap();
+}
+
+pub fn load_high_score(set: &str) -> i32
+{
+	let root = toml::parse_from_file(set).ok().expect(format!("Could not load/parse '{}'", set));
+	let file_name = root.lookup("score_file").unwrap().get_str().unwrap();
+	match File::open(&Path::new(file_name.as_slice()))
+	{
+		Ok(mut f) => f.read_le_i32().unwrap(),
+		Err(_) => 0,
+	}
+}
+
+// filename, name
+pub fn load_sets(dir: &str) -> Vec<(StrBuf, StrBuf)>
+{
+	let files = readdir(&Path::new(dir)).unwrap();
+	let ret: Vec<_> = files.iter().filter(|p| p.extension_str().unwrap() == "cfg").map(|p|
+	{
+		let root = toml::parse_from_path(p).ok().expect(format!("Could not load/parse '{}'", p.as_str().unwrap()));
+		let name = root.lookup("name").unwrap().get_str().unwrap().clone();
+		let filename = p.as_str().unwrap().to_strbuf();
+		(filename, name)
+	}).collect();
+	assert!(ret.len() > 0, "No levels found in 'levels'!");
+	ret
+}
+
+pub fn get_set_name(set: &str) -> StrBuf
+{
+	let root = toml::parse_from_file(set).ok().expect(format!("Could not load/parse '{}'", set));
+	root.lookup("name").unwrap().get_str().unwrap().clone()
+}
+
 pub fn create_star(x: f64, y: f64, appearance: i32, entities: &mut Entities, components: &mut Components) -> uint
 {
 	let sprite = 

@@ -6,10 +6,9 @@ use allegro_font::{FontAddon, Font};
 use bitmap_loader::BitmapLoader;
 use resource_manager::ResourceManager;
 use std::rc::Rc;
-use star_system::StarSystem;
+use star_system::{save_high_score, StarSystem, load_sets};
 use menu::NUM_APPEARANCES;
 use std::cmp::max;
-use score::save_high_score;
 
 component!(
 	Location, location
@@ -177,6 +176,8 @@ component!(
 	MenuMode, menu_mode
 	{
 		cur_sel: uint,
+		set_sel: uint,
+		sets: Vec<(StrBuf, StrBuf)>,
 		title: Rc<Bitmap>,
 		planets: Vec<Rc<Bitmap>>
 	}
@@ -193,6 +194,8 @@ impl MenuMode
 		MenuMode
 		{
 			cur_sel: 0,
+			set_sel: 0,
+			sets: load_sets("levels"),
 			title: state.bmp_manager.load("data/title.png", &state.core).unwrap(),
 			planets: planets,
 		}
@@ -214,7 +217,8 @@ component!(
 		draw_interp: f64,
 		paused: bool,
 		stopped: bool,
-		appearance: i32
+		appearance: i32,
+		set_name: StrBuf
 	}
 )
 
