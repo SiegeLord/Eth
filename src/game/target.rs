@@ -1,6 +1,6 @@
 use allegro5::*;
 use ces::Entities;
-use ces::components::{Components, Location, OldLocation, Size, Target, Sprite};
+use ces::components::{Components, Location, OldLocation, Size, Target, Switchable, Sprite};
 use ces::components::ComponentType;
 use ces::system::System;
 use MODE_ENTITY;
@@ -17,7 +17,8 @@ pub fn create_target(x: f64, y: f64, appearance: i32, entities: &mut Entities, c
 	let e = entities.add();
 	components.add(e, Location{ x: x, y: y }, entities);
 	components.add(e, OldLocation{ x: x, y: y }, entities);
-	components.add(e, Size{ w: 16.0, h: 16.0 }, entities);
+	components.add(e, Size{ d: 16.0 }, entities);
+	components.add(e, Switchable{ dummy: () }, entities);
 	components.add(e, sprite, entities);
 	components.add(e, target, entities);
 	e
@@ -42,8 +43,8 @@ simple_system!
 			let player_l = player_e.get(&components.location).unwrap();
 			let player_z = player_e.get(&components.size).unwrap();
 			
-			let dx = (player_l.x + player_z.w / 2.0) - (l.x + z.w / 2.0);
-			let dy = (player_l.y + player_z.h / 2.0) - (l.y + z.h / 2.0);
+			let dx = (player_l.x + player_z.d / 2.0) - (l.x + z.d / 2.0);
+			let dy = (player_l.y + player_z.d / 2.0) - (l.y + z.d / 2.0);
 			let bmp = if dx * dx + dy * dy < game_mode.range * game_mode.range
 			{
 				&*target.reticle_near
@@ -55,8 +56,8 @@ simple_system!
 			
 			let core = &state.core;
 
-			let x = l.x + (l.x - o.x) * state.draw_interp + (z.w - bmp.get_width() as f64) / 2.0;
-			let y = l.y + (l.y - o.y) * state.draw_interp + (z.h - bmp.get_height() as f64) / 2.0;
+			let x = l.x + (l.x - o.x) * state.draw_interp + (z.d - bmp.get_width() as f64) / 2.0;
+			let y = l.y + (l.y - o.y) * state.draw_interp + (z.d - bmp.get_height() as f64) / 2.0;
 			
 			core.draw_bitmap(bmp, x as f32, y as f32, Flag::zero());
 		});
@@ -87,8 +88,8 @@ simple_system!
 				{
 					key::Space =>
 					{
-						let dx = (player_l.x + player_z.w / 2.0) - (l.x + z.w / 2.0);
-						let dy = (player_l.y + player_z.h / 2.0) - (l.y + z.h / 2.0);
+						let dx = (player_l.x + player_z.d / 2.0) - (l.x + z.d / 2.0);
+						let dy = (player_l.y + player_z.d / 2.0) - (l.y + z.d / 2.0);
 						if dx * dx + dy * dy < game_mode.range * game_mode.range
 						{
 							remove = true;

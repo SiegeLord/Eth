@@ -57,8 +57,8 @@ impl System for GravitySystem
 				let all_m = all_e.get(&components.mass).unwrap();
 				let all_z = all_e.get(&components.size).unwrap();
 				
-				let dx = (all_l.x + all_z.w / 2.0) - (mov_l.x + mov_z.w / 2.0);
-				let dy = (all_l.y + all_z.h / 2.0) - (mov_l.y + mov_z.h / 2.0);
+				let dx = (all_l.x + all_z.d / 2.0) - (mov_l.x + mov_z.d / 2.0);
+				let dy = (all_l.y + all_z.d / 2.0) - (mov_l.y + mov_z.d / 2.0);
 				let rsq = dx * dx + dy * dy;
 				if rsq > 100.0
 				{

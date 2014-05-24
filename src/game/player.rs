@@ -18,7 +18,7 @@ pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, vx: f64, vy: f6
 	components.add(e, OldLocation{ x: x, y: y }, entities);
 	components.add(e, Velocity{ vx: vx, vy: vy }, entities);
 	components.add(e, Acceleration{ ax: 0.0, ay: 0.0 }, entities);
-	components.add(e, Size{ w: 16.0, h: 16.0 }, entities);
+	components.add(e, Size{ d: 16.0 }, entities);
 	components.add(e, Mass{ mass: 0.0 }, entities);
 	components.add(e, sprite, entities);
 	components.add(e, Player::new(fuel), entities);

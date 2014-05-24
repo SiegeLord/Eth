@@ -9,6 +9,7 @@ extern crate allegro_font;
 extern crate allegro_image;
 extern crate libc;
 extern crate toml;
+extern crate rand;
 
 use allegro5::*;
 use allegro_dialog::*;
@@ -24,6 +25,8 @@ use physics::PhysicsSystem;
 use gravity::GravitySystem;
 use target::{TargetInputSystem, TargetReticleDrawSystem};
 use old_location::OldLocationSystem;
+use collision::CollisionLogicSystem;
+use easter::EasterSystem;
 use resource_manager::ResourceManager;
 
 mod ces;
@@ -39,6 +42,8 @@ mod old_location;
 mod sprite;
 mod gravity;
 mod target;
+mod collision;
+mod easter;
 
 #[repr(i32)]
 enum WorldEvent
@@ -111,6 +116,8 @@ fn game()
 	world.add_system(Logic, box GameLogicSystem::new());
 	world.add_system(Logic, box GravitySystem::new());
 	world.add_system(Logic, box PlayerLogicSystem::new());
+	world.add_system(Logic, box CollisionLogicSystem::new());
+	world.add_system(Logic, box EasterSystem::new());
 	world.add_system(Logic, box PhysicsSystem::new()); // Must be last
 	
 	world.add_system(Draw, box GameDrawSystem::new());
@@ -136,6 +143,7 @@ fn game()
 		quit: false,
 		draw_interp: 0.0,
 		paused: false,
+		stopped: false,
 		appearance: 0,
 	};
 	
@@ -178,7 +186,7 @@ fn game()
 				TimerTick{count, ..} =>
 				{
 					game_time = count as f64 * DT;
-					if !get_state(&mut world).paused
+					if !get_state(&mut world).paused && !get_state(&mut world).stopped
 					{
 						world.update_systems(Logic);
 					}
@@ -194,8 +202,11 @@ fn game()
 		
 		get_state(&mut world).core.set_target_bitmap(&buffer);
 
-		let cur_time = get_state(&mut world).core.get_time();
-		get_state(&mut world).draw_interp = ((cur_time - offset - game_time) / DT) as f64;
+		if !get_state(&mut world).paused && !get_state(&mut world).stopped
+		{
+			let cur_time = get_state(&mut world).core.get_time();
+			get_state(&mut world).draw_interp = ((cur_time - offset - game_time) / DT) as f64;
+		}
 		world.update_systems(Draw);
 		
 		let c = get_state(&mut world).core.map_rgb_f(1.0, 0.0, 0.0);

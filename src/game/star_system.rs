@@ -2,7 +2,7 @@ use toml;
 use player::create_player;
 use target::create_target;
 use ces::Entities;
-use ces::components::{Components, Sprite, Location, Size, OldLocation, Mass};
+use ces::components::{Components, Sprite, Location, Size, OldLocation, Mass, Solid, Hole};
 use MODE_ENTITY;
 
 pub fn create_star(x: f64, y: f64, appearance: i32, entities: &mut Entities, components: &mut Components) -> uint
@@ -16,8 +16,27 @@ pub fn create_star(x: f64, y: f64, appearance: i32, entities: &mut Entities, com
 	let e = entities.add();
 	components.add(e, Location{ x: x, y: y }, entities);
 	components.add(e, OldLocation{ x: x, y: y }, entities);
-	components.add(e, Size{ w: 16.0, h: 16.0 }, entities);
+	components.add(e, Size{ d: 16.0 }, entities);
 	components.add(e, Mass{ mass: 1.0 }, entities);
+	components.add(e, Solid{ dummy: () }, entities);
+	components.add(e, sprite, entities);
+	e
+}
+
+pub fn create_hole(x: f64, y: f64, entities: &mut Entities, components: &mut Components) -> uint
+{
+	let sprite = 
+	{
+		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
+		Sprite::new("data/hole.png", state)
+	};
+	
+	let e = entities.add();
+	components.add(e, Location{ x: x, y: y }, entities);
+	components.add(e, OldLocation{ x: x, y: y }, entities);
+	components.add(e, Size{ d: 8.0 }, entities);
+	components.add(e, Mass{ mass: 1.5 }, entities);
+	components.add(e, Hole{ dummy: () }, entities);
 	components.add(e, sprite, entities);
 	e
 }
@@ -31,6 +50,7 @@ pub struct StarSystem
 	start_vy: f64,
 	stars: Vec<(f64, f64, i32)>,
 	targets: Vec<(f64, f64, i32)>,
+	holes: Vec<(f64, f64)>,
 	intro_text: Option<StrBuf>
 }
 
@@ -75,6 +95,17 @@ impl StarSystem
 				targets.push((x, y, a));
 			}
 		});
+
+		let mut holes = vec![];
+		root.lookup("holes").map(|v|
+		{
+			for val in v.get_vec().unwrap().iter()
+			{
+				let x = val.lookup_vec(0).unwrap().get_int().unwrap() as f64;
+				let y = val.lookup_vec(1).unwrap().get_int().unwrap() as f64;
+				holes.push((x, y));
+			}
+		});
 		
 		StarSystem
 		{
@@ -85,6 +116,7 @@ impl StarSystem
 			stars: stars,
 			targets: targets,
 			intro_text: intro_text,
+			holes: holes,
 		}
 	}
 
@@ -99,6 +131,11 @@ impl StarSystem
 		for &(x, y, a) in self.targets.iter()
 		{
 			other_entities.push(create_target(x, y, a, entities, components));
+		}
+
+		for &(x, y) in self.holes.iter()
+		{
+			other_entities.push(create_hole(x, y, entities, components));
 		}
 	}
 

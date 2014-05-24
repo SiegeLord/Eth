@@ -37,15 +37,15 @@ simple_system!
 			o.as_mut().map(|o| o.y = l.y);
 			v.vy = -v.vy;
 		}
-		if l.x > FIELD_WIDTH as f64 - z.w
+		if l.x > FIELD_WIDTH as f64 - z.d
 		{
-			l.x = FIELD_WIDTH as f64 - z.w;
+			l.x = FIELD_WIDTH as f64 - z.d;
 			o.as_mut().map(|o| o.x = l.x);
 			v.vx = -v.vx;
 		}
-		if l.y > FIELD_HEIGHT as f64 - z.h
+		if l.y > FIELD_HEIGHT as f64 - z.d
 		{
-			l.y = FIELD_HEIGHT as f64 - z.h;
+			l.y = FIELD_HEIGHT as f64 - z.d;
 			o.as_mut().map(|o| o.y = l.y);
 			v.vy = -v.vy;
 		}

@@ -44,8 +44,29 @@ component!(
 component!(
 	Size, size
 	{
-		w: f64,
-		h: f64
+		d: f64
+	}
+)
+
+
+component!(
+	Solid, solid
+	{
+		dummy: ()
+	}
+)
+
+component!(
+	Hole, hole
+	{
+		dummy: ()
+	}
+)
+
+component!(
+	Switchable, switchable
+	{
+		dummy: ()
 	}
 )
 
@@ -131,6 +152,7 @@ component!(
 		quit: bool,
 		draw_interp: f64,
 		paused: bool,
+		stopped: bool,
 		appearance: i32
 	}
 )
@@ -218,7 +240,10 @@ components!(
 	OldLocation, old_location;  // 9
 	Sprite, sprite;             // 10
 	Mass, mass;                 // 11
-	Target, target              // 12
+	Target, target;             // 12
+	Solid, solid;               // 13
+	Hole, hole;                 // 14
+	Switchable, switchable      // 15
 )
 //                                 ^
-pub static NUM_COMPONENTS: uint =  12;
+pub static NUM_COMPONENTS: uint =  15;
