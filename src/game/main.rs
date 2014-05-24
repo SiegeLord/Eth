@@ -136,6 +136,7 @@ fn game()
 		quit: false,
 		draw_interp: 0.0,
 		paused: false,
+		appearance: 0,
 	};
 	
 	world.add_entity();

@@ -7,6 +7,7 @@ use bitmap_loader::BitmapLoader;
 use resource_manager::ResourceManager;
 use std::rc::Rc;
 use star_system::StarSystem;
+use menu::NUM_APPEARANCES;
 
 component!(
 	Location, location
@@ -60,8 +61,7 @@ component!(
 		max_fuel: f64,
 		range: f64,
 		targets: i32,
-		intro_text_pos: f32,
-		appearance: i32
+		intro_text_pos: f32
 	}
 )
 
@@ -86,8 +86,7 @@ impl GameMode
 			max_fuel: max_fuel,
 			range: range,
 			targets: targets,
-			intro_text_pos: 0.0,
-			appearance: appearance
+			intro_text_pos: 0.0
 		}
 	}
 }
@@ -96,7 +95,8 @@ component!(
 	MenuMode, menu_mode
 	{
 		cur_sel: uint,
-		title: Rc<Bitmap>
+		title: Rc<Bitmap>,
+		planets: Vec<Rc<Bitmap>>
 	}
 )
 
@@ -104,10 +104,15 @@ impl MenuMode
 {
 	pub fn new(state: &mut State) -> MenuMode
 	{
+		let planets: Vec<_> = range(0, NUM_APPEARANCES).map(|n|
+		{
+			state.bmp_manager.load(format!("data/planet{}.png", n), &state.core).unwrap()
+		}).collect();
 		MenuMode
 		{
 			cur_sel: 0,
-			title: state.bmp_manager.load("data/title.png", &state.core).unwrap()
+			title: state.bmp_manager.load("data/title.png", &state.core).unwrap(),
+			planets: planets,
 		}
 	}
 }
@@ -125,7 +130,8 @@ component!(
 		dh: i32,
 		quit: bool,
 		draw_interp: f64,
-		paused: bool
+		paused: bool,
+		appearance: i32
 	}
 )
 

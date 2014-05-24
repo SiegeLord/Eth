@@ -83,15 +83,17 @@ simple_system!
 		else if reset
 		{
 			/* Man is this ugly */
-			let (old_appearance, sys) = 
+			let (appearance, sys) = 
 			{
 				let e = entities.get(entity_idx);
 				let game_mode = e.get(&components.game_mode).unwrap();
-				(game_mode.appearance, game_mode.star_system.clone())
+				let state = e.get(&components.state).unwrap();
+				(state.appearance,
+				 game_mode.star_system.clone())
 			};
 			let mut player_entity = 0;
 			let mut other_entities = vec![];
-			sys.create_entities(entities, components, old_appearance, 100.0, &mut player_entity, &mut other_entities);
+			sys.create_entities(entities, components, appearance, 100.0, &mut player_entity, &mut other_entities);
 			
 			let (state, mode) = 
 			{

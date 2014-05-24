@@ -6,7 +6,8 @@ use ces::Entities;
 use ces::components::{State, GameMode, MenuMode, Components, ComponentType};
 use ces::system::System;
 
-static NUM_ENTRIES: uint = 3;
+static NUM_ENTRIES: uint = 4;
+pub static NUM_APPEARANCES: i32 = 3;
 
 simple_system!
 (
@@ -44,12 +45,40 @@ simple_system!
 							mode.cur_sel + 1
 						};
 					}
+					key::Left =>
+					{
+						if mode.cur_sel == 0
+						{
+							state.appearance = if state.appearance == 0
+							{
+								NUM_APPEARANCES - 1
+							}
+							else
+							{
+								state.appearance - 1
+							};
+						}
+					}
+					key::Right =>
+					{
+						if mode.cur_sel == 0
+						{
+							state.appearance = if state.appearance == NUM_APPEARANCES - 1
+							{
+								0
+							}
+							else
+							{
+								state.appearance + 1
+							};
+						}
+					}
 					key::Space | key::Enter =>
 					{
 						match mode.cur_sel
 						{
-							0 => switch = true,
-							2 => state.quit = true,
+							1 => switch = true,
+							3 => state.quit = true,
 							_ => ()
 						}
 					}
@@ -64,8 +93,13 @@ simple_system!
 		
 		if switch
 		{
+			let appearance =
 			{
-				let game_mode = GameMode::new("levels/beth.cfg", 0, 1000, 300.0, 50.0, 0, entities, components);
+				let e = entities.get(entity_idx);
+				e.get(&components.state).unwrap().appearance
+			};
+			{
+				let game_mode = GameMode::new("levels/beth.cfg", 0, 1000, 300.0, 50.0, appearance, entities, components);
 				components.add(entity_idx, game_mode, entities);
 				components.sched_remove::<MenuMode>(entity_idx, entities);
 			}
@@ -88,31 +122,48 @@ simple_system!
 		
 		core.clear_to_color(core.map_rgb_f(0.0, 0.0, 0.0));
 		
+		let white = core.map_rgb_f(1.0, 1.0, 1.0);
+		let blue = core.map_rgb_f(0.2, 0.6, 0.9);
+		
 		let hx = (state.dw as f32) / 2.0;
 		let hy = (state.dh as f32) / 2.0;
 		
+		let bmp = &*mode.title;
+		core.draw_bitmap(bmp, ((state.dw - bmp.get_width()) / 2) as f32, hy - 135.0, Flag::zero());
+		
 		let spacing = 16.0;
-		let mut y = hy + spacing * 1.0;
+		let mut y = hy + 32.0;		
 		
 		let text = ["START", "OPTIONS", "QUIT"];
 		
+		let color = if mode.cur_sel == 0
 		{
-			let bmp = &*mode.title;
-			core.draw_bitmap(bmp, ((state.dw - bmp.get_width()) / 2) as f32, hy - 125.0, Flag::zero());
+			white
 		}
+		else
+		{
+			blue
+		};
 		
-		for entry in range(0u, NUM_ENTRIES)
+		core.draw_text(ui_font, color, hx, hy - 4.0, AlignCentre, "APPEARANCE");
+		
+		core.draw_text(ui_font, color, hx, hy + 12.0, AlignCentre, "<      >");
+		
+		let bmp = &**mode.planets.get(state.appearance as uint);
+		core.draw_bitmap(bmp, hx - bmp.get_width() as f32 / 2.0, hy - bmp.get_height() as f32 / 2.0 + 16.0, Flag::zero());
+		
+		for entry in range(1u, NUM_ENTRIES)
 		{
 			let color = if entry == mode.cur_sel
 			{
-				core.map_rgb_f(1.0, 1.0, 1.0)
+				white
 			}
 			else
 			{
-				core.map_rgb_f(0.2, 0.6, 0.9)
+				blue
 			};
 			
-			core.draw_text(ui_font, color, hx, y, AlignCentre, text[entry]);
+			core.draw_text(ui_font, color, hx, y, AlignCentre, text[entry - 1]);
 			
 			y += spacing;
 		}
