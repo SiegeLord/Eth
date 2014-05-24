@@ -10,7 +10,7 @@ pub fn create_target(x: f64, y: f64, appearance: i32, entities: &mut Entities, c
 	let (sprite, target) = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		(Sprite::new(format!("data/spaceship{}.png", appearance), state),
+		(Sprite::new(format!("data/spaceship{}.png", appearance).as_slice(), state),
 		 Target::new(state))
 	};
 	

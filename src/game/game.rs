@@ -169,16 +169,16 @@ simple_system!
 				green
 			};
 			
-			core.draw_text(ui_font, color, 65.0, 20.0, AlignLeft, format!("{}", fuel));
+			core.draw_text(ui_font, color, 65.0, 20.0, AlignLeft, format!("{}", fuel).as_slice());
 		
 		
 			core.draw_text(ui_font, orange, state.dw as f32 - 170.0, 20.0, AlignLeft, "HIGH SCORE:");
-			core.draw_text(ui_font, gray, state.dw as f32 - 75.0, 20.0, AlignLeft, format!("{}", mode.high_score as i32));
+			core.draw_text(ui_font, gray, state.dw as f32 - 75.0, 20.0, AlignLeft, format!("{}", mode.high_score as i32).as_slice());
 			core.draw_text(ui_font, orange, state.dw as f32 - 130.0, 30.0, AlignLeft, "SCORE:");
-			core.draw_text(ui_font, white, state.dw as f32 - 75.0, 30.0, AlignLeft, format!("{}", mode.score as i32));
+			core.draw_text(ui_font, white, state.dw as f32 - 75.0, 30.0, AlignLeft, format!("{}", mode.score as i32).as_slice());
 			
 			core.draw_text(ui_font, orange, hx, 20.0, AlignRight, "BONUS:");
-			core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32));
+			core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32).as_slice());
 			
 			if mode.targets <= 0
 			{
@@ -188,7 +188,7 @@ simple_system!
 			else
 			{			
 				core.draw_text(ui_font, orange, hx, (state.dh as f32) - 30.0, AlignRight, "TARGETS:");
-				core.draw_text(ui_font, white, hx, (state.dh as f32) - 30.0, AlignLeft, format!(" {}", mode.targets));
+				core.draw_text(ui_font, white, hx, (state.dh as f32) - 30.0, AlignLeft, format!(" {}", mode.targets).as_slice());
 				
 				if state.paused
 				{

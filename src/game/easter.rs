@@ -93,7 +93,7 @@ impl System for EasterSystem
 				let e = entities.get(target_idx);
 				let s = e.get_mut(&mut components.sprite).unwrap();
 				let idx = task_rng().gen_range(0, NUM_APPEARANCES);
-				*s = Sprite::new(format!("data/planet{}.png", idx), state);
+				*s = Sprite::new(format!("data/planet{}.png", idx).as_slice(), state);
 			}
 		}
 	}

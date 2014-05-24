@@ -10,7 +10,7 @@ pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, vx: f64, vy: f6
 	let sprite = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		Sprite::new(format!("data/planet{}.png", appearance), state)
+		Sprite::new(format!("data/planet{}.png", appearance).as_slice(), state)
 	};
 	
 	let e = entities.add();

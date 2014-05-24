@@ -127,7 +127,7 @@ impl MenuMode
 	{
 		let planets: Vec<_> = range(0, NUM_APPEARANCES).map(|n|
 		{
-			state.bmp_manager.load(format!("data/planet{}.png", n), &state.core).unwrap()
+			state.bmp_manager.load(format!("data/planet{}.png", n).as_slice(), &state.core).unwrap()
 		}).collect();
 		MenuMode
 		{

@@ -10,7 +10,7 @@ pub fn create_star(x: f64, y: f64, appearance: i32, entities: &mut Entities, com
 	let sprite = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		Sprite::new(format!("data/star{}.png", appearance), state)
+		Sprite::new(format!("data/star{}.png", appearance).as_slice(), state)
 	};
 	
 	let e = entities.add();
