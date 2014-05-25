@@ -110,7 +110,7 @@ simple_system!
 				};
 				state.stopped = false;
 				IntermissMode::new(mode.set.as_slice(), mode.star_system.get_next().map(|s| s.clone()),
-				                   mode.time_bonus, mode.score, mode.high_score, mode.max_fuel, mode.range, fuel)
+				                   mode.time_bonus, mode.score, mode.high_score, mode.max_fuel, mode.range, fuel, state)
 			};
 			components.add(entity_idx, intermiss_mode, entities);
 			components.sched_remove::<GameMode>(entity_idx, entities);

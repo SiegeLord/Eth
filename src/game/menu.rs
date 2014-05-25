@@ -34,6 +34,7 @@ simple_system!
 						{
 							mode.cur_sel - 1
 						};
+						state.sfx.play(&*state.ui_sound1, &state.audio);
 					}
 					key::Down =>
 					{
@@ -45,6 +46,7 @@ simple_system!
 						{
 							mode.cur_sel + 1
 						};
+						state.sfx.play(&*state.ui_sound1, &state.audio);
 					}
 					key::Left =>
 					{
@@ -58,6 +60,7 @@ simple_system!
 							{
 								state.appearance - 1
 							};
+							state.sfx.play(&*state.ui_sound1, &state.audio);
 						}
 						else if mode.cur_sel == 2
 						{
@@ -69,6 +72,7 @@ simple_system!
 							{
 								mode.set_sel - 1
 							};
+							state.sfx.play(&*state.ui_sound1, &state.audio);
 						}
 					}
 					key::Right =>
@@ -83,6 +87,7 @@ simple_system!
 							{
 								state.appearance + 1
 							};
+							state.sfx.play(&*state.ui_sound1, &state.audio);
 						}
 						else if mode.cur_sel == 2
 						{
@@ -94,14 +99,23 @@ simple_system!
 							{
 								mode.set_sel + 1
 							};
+							state.sfx.play(&*state.ui_sound1, &state.audio);
 						}
 					}
 					key::Space | key::Enter =>
 					{
 						match mode.cur_sel
 						{
-							0 => switch = true,
-							3 => state.quit = true,
+							0 => 
+							{
+								switch = true;
+								state.sfx.play(&*state.ui_sound2, &state.audio);
+							}
+							3 => 
+							{
+								state.quit = true;
+								state.sfx.play(&*state.ui_sound2, &state.audio);
+							}
 							_ => ()
 						}
 					}

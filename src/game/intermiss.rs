@@ -7,7 +7,7 @@ use ces::system::System;
 
 static NUM_ENTRIES: uint = 3;
 static FUEL_COST: i32 = 45000;
-static CAMERA_COST: i32 = 30000;
+static CAMERA_COST: i32 = 20000;
 
 simple_system!
 (
@@ -15,40 +15,67 @@ simple_system!
 	{
 		let e = entities.get(entity_idx);
 		let mode = e.get_mut(&mut components.intermiss_mode).unwrap();
+		let state = e.get_mut(&mut components.state).unwrap();
 		
 		let rate = 100;
+		
+		let mut counting = false;
 		
 		if mode.time_bonus > 0
 		{
 			mode.time_bonus -= rate;
 			mode.disp_score += rate;
+			counting = true;
 		}
 		if mode.fuel_bonus > 0
 		{
 			mode.fuel_bonus -= rate;
 			mode.disp_score += rate;
+			counting = true;
 		}
 		if mode.completion_bonus > 0
 		{
 			mode.completion_bonus -= rate;
 			mode.disp_score += rate;
+			counting = true;
 		}
 		if mode.time_bonus > 0
 		{
 			mode.time_bonus -= rate;
 			mode.disp_score += rate;
+			counting = true;
 		}
 		if mode.cost > 0
 		{
 			mode.cost -= rate;
 			mode.disp_score -= rate;
+			counting = true;
+		}
+		
+		if counting
+		{
+			if mode.score_instance.is_none()
+			{
+				mode.score_instance = Some(state.sfx.play_persistent(&*mode.score_sound, &state.audio));
+			}
+			
+			mode.score_instance.map(|inst|
+			{
+				state.sfx.get_instance(inst).set_playing(true);
+			});
+		}
+		else
+		{
+			mode.score_instance.map(|inst|
+			{
+				state.sfx.get_instance(inst).set_playing(false);
+			});
 		}
 
 		if mode.disp_score > mode.disp_high_score
 		{
 			mode.disp_high_score = mode.disp_score;
 		}
-
 	}
 )
 
@@ -69,7 +96,8 @@ simple_system!
 				{
 					key::Escape =>
 					{
-						switch = true
+						switch = true;
+						state.sfx.play(&*state.ui_sound2, &state.audio);
 					}
 					key::Space | key::Enter =>
 					{
@@ -77,14 +105,18 @@ simple_system!
 						{
 							match mode.cur_sel
 							{
-								0 => next = true,
+								0 =>
+								{
+									state.sfx.play(&*state.ui_sound2, &state.audio);
+									next = true;
+								}
 								1 =>
 								{
 									if mode.score > FUEL_COST
 									{
 										mode.score -= FUEL_COST;
 										mode.cost += FUEL_COST;
-										mode.fuel += 25.0;
+										mode.fuel += 50.0;
 									}
 								}
 								2 =>
@@ -93,7 +125,7 @@ simple_system!
 									{
 										mode.score -= CAMERA_COST;
 										mode.cost += CAMERA_COST;
-										mode.range += 5.0;
+										mode.range += 10.0;
 									}
 								}
 								_ => ()
@@ -101,6 +133,7 @@ simple_system!
 						}
 						else
 						{
+							state.sfx.play(&*state.ui_sound2, &state.audio);
 							switch = true;
 						}
 					}
@@ -114,6 +147,7 @@ simple_system!
 						{
 							mode.cur_sel - 1
 						};
+						state.sfx.play(&*state.ui_sound1, &state.audio);
 					}
 					key::Down =>
 					{
@@ -125,6 +159,7 @@ simple_system!
 						{
 							mode.cur_sel + 1
 						};
+						state.sfx.play(&*state.ui_sound1, &state.audio);
 					}
 					_ => ()
 				}

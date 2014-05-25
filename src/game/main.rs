@@ -7,6 +7,8 @@ extern crate allegro5;
 extern crate allegro_dialog;
 extern crate allegro_font;
 extern crate allegro_image;
+extern crate allegro_audio;
+extern crate allegro_acodec;
 extern crate libc;
 extern crate toml;
 extern crate rand;
@@ -15,6 +17,8 @@ use allegro5::*;
 use allegro_dialog::*;
 use allegro_font::*;
 use allegro_image::*;
+use allegro_audio::*;
+use allegro_acodec::*;
 use ces::World;
 use ces::components::{State, MenuMode};
 use menu::{MenuInputSystem, MenuDrawSystem};
@@ -29,6 +33,7 @@ use old_location::OldLocationSystem;
 use collision::CollisionLogicSystem;
 use easter::EasterSystem;
 use resource_manager::ResourceManager;
+use sfx::Sfx;
 
 mod ces;
 mod menu;
@@ -36,6 +41,7 @@ mod game;
 mod free_list;
 mod resource_manager;
 mod bitmap_loader;
+mod sample_loader;
 mod star_system;
 mod player;
 mod physics;
@@ -47,6 +53,7 @@ mod collision;
 mod easter;
 mod intermiss;
 mod animation;
+mod sfx;
 
 #[repr(i32)]
 enum WorldEvent
@@ -84,6 +91,8 @@ fn game()
 	let mut core = Core::init().unwrap();
 	let font = FontAddon::init(&core).expect("Could not init font addon");
 	let _image = ImageAddon::init(&core).expect("Could not init image addon");
+	let audio = AudioAddon::init(&core).expect("Could not init audio addon");
+	let _acodec = AcodecAddon::init(&audio).expect("Could not init acodec addon");
 	
 	core.install_keyboard();
 	
@@ -134,7 +143,11 @@ fn game()
 	world.add_system(Draw, box GameUIDrawSystem::new());
 	//~ world.add_system(Draw, box PlayerDrawSystem::new());
 	
+	let sfx = Sfx::new(&audio);
 	let bmp_manager = ResourceManager::new();
+	let mut sample_manager = ResourceManager::new();
+	let ui_sound1 = sample_manager.load("data/ui_sound1.ogg", &audio).unwrap();
+	let ui_sound2 = sample_manager.load("data/ui_sound2.ogg", &audio).unwrap();
 	let ui_font = font.load_bitmap_font("data/font.png").expect("Couldn't create built-in font from 'data/font.png'");
 	let game_background = core.load_bitmap("data/bkg.png").expect("Couldn't load 'data/bkg.png'");
 	let intermiss_background = core.load_bitmap("data/intermiss.png").expect("Couldn't load 'data/intermiss.png'");
@@ -145,7 +158,12 @@ fn game()
 		key_up: None,
 		core: core,
 		font: font,
+		audio: audio,
+		sfx: sfx,
 		bmp_manager: bmp_manager,
+		sample_manager: sample_manager,
+		ui_sound1: ui_sound1,
+		ui_sound2: ui_sound2,
 		ui_font: ui_font,
 		dh: bh,
 		dw: bw,

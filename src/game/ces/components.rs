@@ -3,13 +3,16 @@ use ces::{Component, ComponentSet, Entities};
 use allegro5::key::KeyCode;
 use allegro5::{Bitmap, Core};
 use allegro_font::{FontAddon, Font};
+use allegro_audio::{AudioAddon, Sample};
 use bitmap_loader::BitmapLoader;
+use sample_loader::SampleLoader;
 use resource_manager::ResourceManager;
 use std::rc::Rc;
 use star_system::{save_high_score, StarSystem, load_sets};
 use menu::NUM_APPEARANCES;
 use std::cmp::max;
 use animation::Animation;
+use sfx::Sfx;
 
 component!(
 	Location, location
@@ -88,13 +91,15 @@ component!(
 		completion_bonus: i32,
 		cur_sel: uint,
 		cost: i32,
-		disp_high_score: i32
+		disp_high_score: i32,
+		score_sound: Rc<Sample>,
+		score_instance: Option<uint>
 	}
 )
 
 impl IntermissMode
 {
-	pub fn new(set: &str, next: Option<StrBuf>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64, fuel: f64) -> IntermissMode
+	pub fn new(set: &str, next: Option<StrBuf>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64, fuel: f64, state: &mut State) -> IntermissMode
 	{
 		let old_high_score = high_score;
 		let old_score = score;
@@ -102,6 +107,7 @@ impl IntermissMode
 		let time_bonus = time_bonus as i32 * 100;
 		let completion_bonus = 50 * 100;
 		let score = score + time_bonus + fuel_bonus + completion_bonus;
+		let score_sound = state.sample_manager.load("data/score.ogg", &state.audio).unwrap();
 		
 		let high_score = max(score, high_score);
 		if high_score != old_high_score
@@ -124,7 +130,9 @@ impl IntermissMode
 			completion_bonus: completion_bonus,
 			cur_sel: 0,
 			cost: 0,
-			disp_high_score: old_high_score
+			disp_high_score: old_high_score,
+			score_sound: score_sound,
+			score_instance: None,
 		}
 	}
 }
@@ -142,7 +150,9 @@ component!(
 		max_fuel: f64,
 		range: f64,
 		targets: i32,
-		intro_text_pos: f32
+		intro_text_pos: f32//,
+		//~ camera_sound: Rc<Sample>,
+		//~ explosion: Rc<Sample>,
 	}
 )
 
@@ -207,8 +217,10 @@ component!(
 	State, state
 	{
 		core: Core,
+		audio: AudioAddon,
 		font: FontAddon,
 		bmp_manager: ResourceManager<StrBuf, Bitmap, BitmapLoader>,
+		sample_manager: ResourceManager<StrBuf, Sample, SampleLoader>,
 		key_down: Option<KeyCode>,
 		key_up: Option<KeyCode>,
 		ui_font: Font,
@@ -221,7 +233,10 @@ component!(
 		appearance: i32,
 		set_name: StrBuf,
 		game_background: Bitmap,
-		intermiss_background: Bitmap
+		intermiss_background: Bitmap,
+		ui_sound1: Rc<Sample>,
+		ui_sound2: Rc<Sample>,
+		sfx: Sfx
 	}
 )
 
