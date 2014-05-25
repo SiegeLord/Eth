@@ -152,9 +152,10 @@ simple_system!
 	GameDrawSystem[GameMode, State]
 	{
 		let e = entities.get(entity_idx);
-		let core = &e.get(&mut components.state).unwrap().core;
+		let state = &e.get(&components.state).unwrap();
+		let core = &state.core;
 
-		core.clear_to_color(core.map_rgb_f(0.0, 0.0, 0.0));
+		core.draw_bitmap(&state.game_background, 0.0, 0.0, Flag::zero());
 	}
 )
 

@@ -183,8 +183,8 @@ simple_system!
 		let core = &state.core;
 		let ui_font = &state.ui_font;
 		let mode = &e.get(&components.intermiss_mode).unwrap();
-		
-		core.clear_to_color(core.map_rgb_f(0.0, 0.0, 0.0));
+
+		core.draw_bitmap(&state.intermiss_background, 0.0, 0.0, Flag::zero());
 		
 		let hx = (state.dw as f32) / 2.0;
 		let hy = (state.dh as f32) / 2.0;

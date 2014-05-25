@@ -136,6 +136,8 @@ fn game()
 	
 	let bmp_manager = ResourceManager::new();
 	let ui_font = font.load_bitmap_font("data/font.png").expect("Couldn't create built-in font from 'data/font.png'");
+	let game_background = core.load_bitmap("data/bkg.png").expect("Couldn't load 'data/bkg.png'");
+	let intermiss_background = core.load_bitmap("data/intermiss.png").expect("Couldn't load 'data/intermiss.png'");
 	
 	let mut state = State
 	{
@@ -153,6 +155,8 @@ fn game()
 		stopped: false,
 		appearance: 0,
 		set_name: "".to_strbuf(),
+		game_background: game_background,
+		intermiss_background: intermiss_background,
 	};
 	
 	world.add_entity();

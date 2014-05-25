@@ -219,7 +219,9 @@ component!(
 		paused: bool,
 		stopped: bool,
 		appearance: i32,
-		set_name: StrBuf
+		set_name: StrBuf,
+		game_background: Bitmap,
+		intermiss_background: Bitmap
 	}
 )
 

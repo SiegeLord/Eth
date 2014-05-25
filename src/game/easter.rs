@@ -85,7 +85,7 @@ impl System for EasterSystem
 			let state = mode_e.get_mut(&mut components.state).unwrap();
 			{
 				let player_s = player_e.get_mut(&mut components.sprite).unwrap();
-				*player_s = Sprite::new("data/spaceship0.cfg", false, state);
+				*player_s = Sprite::new("data/spaceship2.cfg", false, state);
 			}
 
 			for &target_idx in self.targets.iter()
