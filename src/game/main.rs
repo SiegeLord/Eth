@@ -20,7 +20,7 @@ use ces::components::{State, MenuMode};
 use menu::{MenuInputSystem, MenuDrawSystem};
 use game::{GameInputSystem, GameLogicSystem, GameDrawSystem, GameUIDrawSystem};
 use intermiss::{IntermissInputSystem, IntermissLogicSystem, IntermissDrawSystem};
-use player::{PlayerLogicSystem, PlayerInputSystem};
+use player::{PlayerLogicSystem, PlayerDrawSystem, PlayerInputSystem};
 use sprite::SpriteDrawSystem;
 use physics::PhysicsSystem;
 use gravity::GravitySystem;
@@ -127,6 +127,7 @@ fn game()
 	world.add_system(Draw, box IntermissDrawSystem::new());
 	world.add_system(Draw, box GameDrawSystem::new());
 	world.add_system(Draw, box MenuDrawSystem::new());
+	world.add_system(Draw, box PlayerDrawSystem::new());
 	world.add_system(Draw, box SpriteDrawSystem::new());
 	world.add_system(Draw, box TargetReticleDrawSystem::new());
 	world.add_system(Draw, box GameUIDrawSystem::new());

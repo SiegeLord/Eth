@@ -188,7 +188,8 @@ simple_system!
 		core.draw_text(ui_font, get_sel_color(mode.cur_sel, 2), hx, y, AlignCentre, "MISSION SET");
 		y += spacing;
 		
-		core.draw_text(ui_font, get_sel_color(mode.cur_sel, 2), hx, y, AlignCentre, format!("< {:10} >", mode.sets.get(mode.set_sel).ref1()).as_slice());
+		core.draw_text(ui_font, get_sel_color(mode.cur_sel, 2), hx, y, AlignCentre, "<          >");
+		core.draw_text(ui_font, get_sel_color(mode.cur_sel, 2), hx, y, AlignCentre, format!("{}", mode.sets.get(mode.set_sel).ref1()).as_slice());
 		y += spacing;
 		
 		core.draw_text(ui_font, get_sel_color(mode.cur_sel, 3), hx, y, AlignCentre, "QUIT");

@@ -7,10 +7,11 @@ use MODE_ENTITY;
 
 pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, vx: f64, vy: f64, entities: &mut Entities, components: &mut Components) -> uint
 {
-	let sprite = 
+	let (sprite, player) = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		Sprite::new(format!("data/planet{}.png", appearance).as_slice(), state)
+		(Sprite::new(format!("data/planet{}.png", appearance).as_slice(), state),
+		 Player::new(fuel, state))
 	};
 	
 	let e = entities.add();
@@ -21,7 +22,7 @@ pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, vx: f64, vy: f6
 	components.add(e, Size{ d: 16.0 }, entities);
 	components.add(e, Mass{ mass: 0.0 }, entities);
 	components.add(e, sprite, entities);
-	components.add(e, Player::new(fuel), entities);
+	components.add(e, player, entities);
 	e
 }
 
@@ -81,6 +82,53 @@ simple_system!
 				_ => ()
 			}
 		});
+	}
+)
+
+simple_system!
+(
+	PlayerDrawSystem[Player, Location, OldLocation, Size]
+	{
+		let mode_e = entities.get(MODE_ENTITY);
+		let e = entities.get(entity_idx);
+		
+		let player = e.get(&components.player).unwrap();
+		let l = e.get(&mut components.location).unwrap();
+		let o = e.get(&mut components.old_location).unwrap();
+		let z = e.get(&mut components.size).unwrap();
+		
+		let state = mode_e.get(&mut components.state).unwrap();
+		let core = &state.core;
+		
+		fn draw_bmp(x: f64, y: f64, z: &Size, bmp: &Bitmap, core: &Core)
+		{
+			let x = x + (z.d - bmp.get_width() as f64) / 2.0;
+			let y = y + (z.d - bmp.get_height() as f64) / 2.0;
+			core.draw_bitmap(bmp, x as f32, y as f32, Flag::zero());
+		}
+
+		let x = l.x + (l.x - o.x) * state.draw_interp;
+		let y = l.y + (l.y - o.y) * state.draw_interp;
+		
+		if player.fuel > 0.0
+		{
+			if player.up > 0.0
+			{
+				draw_bmp(x, y, z, &*player.up_spr, core);
+			}
+			if player.down > 0.0
+			{
+				draw_bmp(x, y, z, &*player.down_spr, core);
+			}
+			if player.left > 0.0
+			{
+				draw_bmp(x, y, z, &*player.left_spr, core);
+			}
+			if player.right > 0.0
+			{
+				draw_bmp(x, y, z, &*player.right_spr, core);
+			}
+		}
 	}
 )
 

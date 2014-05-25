@@ -229,13 +229,17 @@ component!(
 		up: f64,
 		down: f64,
 		left: f64,
-		right: f64
+		right: f64,
+		up_spr: Rc<Bitmap>,
+		down_spr: Rc<Bitmap>,
+		left_spr: Rc<Bitmap>,
+		right_spr: Rc<Bitmap>
 	}
 )
 
 impl Player
 {
-	pub fn new(fuel: f64) -> Player
+	pub fn new(fuel: f64, state: &mut State) -> Player
 	{
 		Player
 		{
@@ -243,7 +247,11 @@ impl Player
 			up: 0.0,
 			down: 0.0,
 			left: 0.0,
-			right: 0.0
+			right: 0.0,
+			up_spr: state.bmp_manager.load("data/thruster_up.png", &state.core).unwrap(),
+			down_spr: state.bmp_manager.load("data/thruster_down.png", &state.core).unwrap(),
+			left_spr: state.bmp_manager.load("data/thruster_left.png", &state.core).unwrap(),
+			right_spr: state.bmp_manager.load("data/thruster_right.png", &state.core).unwrap(),
 		}
 	}
 }
