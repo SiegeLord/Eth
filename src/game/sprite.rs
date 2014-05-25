@@ -20,11 +20,11 @@ simple_system!
 		let state = mode_e.get(&mut components.state).unwrap();
 		let core = &state.core;
 		
-		let bmp = &*sprite.bmp;
+		let bmp = &sprite.bmp;
 
 		let x = l.x + (l.x - o.x) * state.draw_interp + (z.d - bmp.get_width() as f64) / 2.0;
 		let y = l.y + (l.y - o.y) * state.draw_interp + (z.d - bmp.get_height() as f64) / 2.0;
 		
-		core.draw_bitmap(bmp, x as f32, y as f32, Flag::zero());
+		bmp.draw(x as f32, y as f32, core);
 	}
 )

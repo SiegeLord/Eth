@@ -10,7 +10,7 @@ pub fn create_target(x: f64, y: f64, appearance: i32, entities: &mut Entities, c
 	let (sprite, target) = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		(Sprite::new(format!("data/spaceship{}.png", appearance).as_slice(), state),
+		(Sprite::new(format!("data/spaceship{}.cfg", appearance).as_slice(), false, state),
 		 Target::new(state))
 	};
 	
@@ -47,11 +47,11 @@ simple_system!
 			let dy = (player_l.y + player_z.d / 2.0) - (l.y + z.d / 2.0);
 			let bmp = if dx * dx + dy * dy < game_mode.range * game_mode.range
 			{
-				&*target.reticle_near
+				&target.reticle_near
 			}
 			else
 			{
-				&*target.reticle_far
+				&target.reticle_far
 			};
 			
 			let core = &state.core;
@@ -59,7 +59,7 @@ simple_system!
 			let x = l.x + (l.x - o.x) * state.draw_interp + (z.d - bmp.get_width() as f64) / 2.0;
 			let y = l.y + (l.y - o.y) * state.draw_interp + (z.d - bmp.get_height() as f64) / 2.0;
 			
-			core.draw_bitmap(bmp, x as f32, y as f32, Flag::zero());
+			bmp.draw(x as f32, y as f32, core);
 		});
 	}
 )

@@ -54,7 +54,7 @@ pub fn create_star(x: f64, y: f64, appearance: i32, entities: &mut Entities, com
 	let sprite = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		Sprite::new(format!("data/star{}.png", appearance).as_slice(), state)
+		Sprite::new(format!("data/star{}.cfg", appearance).as_slice(), false, state)
 	};
 	
 	let e = entities.add();
@@ -72,7 +72,7 @@ pub fn create_hole(x: f64, y: f64, entities: &mut Entities, components: &mut Com
 	let sprite = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		Sprite::new("data/hole.png", state)
+		Sprite::new("data/hole.cfg", false, state)
 	};
 	
 	let e = entities.add();

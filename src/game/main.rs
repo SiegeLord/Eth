@@ -46,6 +46,7 @@ mod target;
 mod collision;
 mod easter;
 mod intermiss;
+mod animation;
 
 #[repr(i32)]
 enum WorldEvent

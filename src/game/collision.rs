@@ -29,7 +29,7 @@ simple_system!
 			let dx = (player_l.x + player_z.d / 2.0) - (l.x + z.d / 2.0);
 			let dy = (player_l.y + player_z.d / 2.0) - (l.y + z.d / 2.0);
 			let d = (player_z.d + z.d) / 2.0;
-			if dx * dx + dy * dy < d * d
+			if dx * dx + dy * dy < d * d && player_e.get(&components.player).is_some()
 			{
 				collided = true;
 			}
@@ -44,7 +44,7 @@ simple_system!
 			
 			let state = mode_e.get_mut(&mut components.state).unwrap();
 			let player_s = player_e.get_mut(&mut components.sprite).unwrap();
-			*player_s = Sprite::new("data/explosion.png", state);
+			*player_s = Sprite::new("data/explosion.cfg", true, state);
 		}
 	}
 )

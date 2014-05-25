@@ -9,6 +9,7 @@ use std::rc::Rc;
 use star_system::{save_high_score, StarSystem, load_sets};
 use menu::NUM_APPEARANCES;
 use std::cmp::max;
+use animation::Animation;
 
 component!(
 	Location, location
@@ -230,10 +231,10 @@ component!(
 		down: f64,
 		left: f64,
 		right: f64,
-		up_spr: Rc<Bitmap>,
-		down_spr: Rc<Bitmap>,
-		left_spr: Rc<Bitmap>,
-		right_spr: Rc<Bitmap>
+		up_spr: Animation,
+		down_spr: Animation,
+		left_spr: Animation,
+		right_spr: Animation
 	}
 )
 
@@ -248,10 +249,10 @@ impl Player
 			down: 0.0,
 			left: 0.0,
 			right: 0.0,
-			up_spr: state.bmp_manager.load("data/thruster_up.png", &state.core).unwrap(),
-			down_spr: state.bmp_manager.load("data/thruster_down.png", &state.core).unwrap(),
-			left_spr: state.bmp_manager.load("data/thruster_left.png", &state.core).unwrap(),
-			right_spr: state.bmp_manager.load("data/thruster_right.png", &state.core).unwrap(),
+			up_spr: Animation::new("data/thruster_up.cfg", false, state),
+			down_spr: Animation::new("data/thruster_down.cfg", false, state),
+			left_spr: Animation::new("data/thruster_left.cfg", false, state),
+			right_spr: Animation::new("data/thruster_right.cfg", false, state),
 		}
 	}
 }
@@ -259,17 +260,17 @@ impl Player
 component!(
 	Sprite, sprite
 	{
-		bmp: Rc<Bitmap>
+		bmp: Animation
 	}
 )
 
 impl Sprite
 {
-	pub fn new(name: &str, state: &mut State) -> Sprite
+	pub fn new(name: &str, play_once: bool, state: &mut State) -> Sprite
 	{
 		Sprite
 		{
-			bmp: state.bmp_manager.load(name, &state.core).unwrap()
+			bmp: Animation::new(name, play_once, state)
 		}
 	}
 }
@@ -284,8 +285,8 @@ component!(
 component!(
 	Target, target
 	{
-		reticle_near: Rc<Bitmap>,
-		reticle_far: Rc<Bitmap>
+		reticle_near: Animation,
+		reticle_far: Animation
 	}
 )
 
@@ -295,8 +296,8 @@ impl Target
 	{
 		Target
 		{
-			reticle_near: state.bmp_manager.load("data/reticle.png", &state.core).unwrap(),
-			reticle_far: state.bmp_manager.load("data/reticle2.png", &state.core).unwrap()
+			reticle_near: Animation::new("data/reticle.cfg", false, state),
+			reticle_far: Animation::new("data/reticle2.cfg", false, state)
 		}
 	}
 }

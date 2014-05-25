@@ -85,7 +85,7 @@ impl System for EasterSystem
 			let state = mode_e.get_mut(&mut components.state).unwrap();
 			{
 				let player_s = player_e.get_mut(&mut components.sprite).unwrap();
-				*player_s = Sprite::new("data/spaceship0.png", state);
+				*player_s = Sprite::new("data/spaceship0.cfg", false, state);
 			}
 
 			for &target_idx in self.targets.iter()
@@ -93,7 +93,7 @@ impl System for EasterSystem
 				let e = entities.get(target_idx);
 				let s = e.get_mut(&mut components.sprite).unwrap();
 				let idx = task_rng().gen_range(0, NUM_APPEARANCES);
-				*s = Sprite::new(format!("data/planet{}.png", idx).as_slice(), state);
+				*s = Sprite::new(format!("data/planet{}.cfg", idx).as_slice(), false, state);
 			}
 		}
 	}

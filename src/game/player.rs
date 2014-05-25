@@ -4,13 +4,14 @@ use ces::components::{Components, Location, Velocity, Acceleration, Size, Player
 use ces::components::ComponentType;
 use ces::system::System;
 use MODE_ENTITY;
+use animation::Animation;
 
 pub fn create_player(appearance: i32, fuel: f64, x: f64, y: f64, vx: f64, vy: f64, entities: &mut Entities, components: &mut Components) -> uint
 {
 	let (sprite, player) = 
 	{
 		let state = entities.get(MODE_ENTITY).get_mut(&mut components.state).unwrap();
-		(Sprite::new(format!("data/planet{}.png", appearance).as_slice(), state),
+		(Sprite::new(format!("data/planet{}.png", appearance).as_slice(), false, state),
 		 Player::new(fuel, state))
 	};
 	
@@ -100,11 +101,11 @@ simple_system!
 		let state = mode_e.get(&mut components.state).unwrap();
 		let core = &state.core;
 		
-		fn draw_bmp(x: f64, y: f64, z: &Size, bmp: &Bitmap, core: &Core)
+		fn draw_bmp(x: f64, y: f64, z: &Size, bmp: &Animation, core: &Core)
 		{
 			let x = x + (z.d - bmp.get_width() as f64) / 2.0;
 			let y = y + (z.d - bmp.get_height() as f64) / 2.0;
-			core.draw_bitmap(bmp, x as f32, y as f32, Flag::zero());
+			bmp.draw(x as f32, y as f32, core);
 		}
 
 		let x = l.x + (l.x - o.x) * state.draw_interp;
@@ -114,19 +115,19 @@ simple_system!
 		{
 			if player.up > 0.0
 			{
-				draw_bmp(x, y, z, &*player.up_spr, core);
+				draw_bmp(x, y, z, &player.up_spr, core);
 			}
 			if player.down > 0.0
 			{
-				draw_bmp(x, y, z, &*player.down_spr, core);
+				draw_bmp(x, y, z, &player.down_spr, core);
 			}
 			if player.left > 0.0
 			{
-				draw_bmp(x, y, z, &*player.left_spr, core);
+				draw_bmp(x, y, z, &player.left_spr, core);
 			}
 			if player.right > 0.0
 			{
-				draw_bmp(x, y, z, &*player.right_spr, core);
+				draw_bmp(x, y, z, &player.right_spr, core);
 			}
 		}
 	}

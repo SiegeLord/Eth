@@ -168,62 +168,71 @@ simple_system!
 		let ui_font = &state.ui_font;
 		let mode = &e.get(&components.game_mode).unwrap();
 		let player_e = entities.get(mode.player_entity);
-		player_e.get(&components.player).map(|player|
+		
+		let hx = (state.dw as f32) / 2.0;
+		let hy = (state.dh as f32) / 2.0;
+		
+		let red = core.map_rgb_f(0.9, 0.2, 0.1);
+		
+		match player_e.get(&components.player)
 		{
-		
-			let hx = (state.dw as f32) / 2.0;
-			let hy = (state.dh as f32) / 2.0;
-
-			let orange = core.map_rgb_f(0.8, 0.7, 0.3);
-			let white = core.map_rgb_f(1.0, 1.0, 1.0);
-			let blue = core.map_rgb_f(0.2, 0.6, 0.9);
-			let green = core.map_rgb_f(0.3, 0.8, 0.1);
-		
-			core.draw_text(ui_font, orange, 20.0, 20.0, AlignLeft, "FUEL:");
-			
-			let fuel = player.fuel as i32;
-			let color = if fuel < 50
+			Some(player) =>
 			{
-				core.map_rgb_f(0.9, 0.2, 0.1)
-			}
-			else if fuel < 100
-			{
-				core.map_rgb_f(0.9, 0.9, 0.1)
-			}
-			else
-			{
-				green
-			};
+				let orange = core.map_rgb_f(0.8, 0.7, 0.3);
+				let white = core.map_rgb_f(1.0, 1.0, 1.0);
+				let blue = core.map_rgb_f(0.2, 0.6, 0.9);
+				let green = core.map_rgb_f(0.3, 0.8, 0.1);
 			
-			core.draw_text(ui_font, color, 65.0, 20.0, AlignLeft, format!("{}", fuel).as_slice());
-		
-		
-			core.draw_text(ui_font, orange, state.dw as f32 - 130.0, 20.0, AlignLeft, "SCORE:");
-			core.draw_text(ui_font, white, state.dw as f32 - 75.0, 20.0, AlignLeft, format!("{}", mode.score as i32).as_slice());
-			
-			core.draw_text(ui_font, orange, hx, 20.0, AlignRight, "BONUS:");
-			core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32).as_slice());
-			
-			if mode.targets <= 0
-			{
-				core.draw_text(ui_font, green, hx, hy - 10.0, AlignCentre, "MISSION ACCOMPLISHED");
-				core.draw_text(ui_font, orange, hx, hy + 10.0, AlignCentre, "PRESS 'SPACE' TO CONTINUE");
-			}
-			else
-			{			
-				core.draw_text(ui_font, orange, hx, (state.dh as f32) - 30.0, AlignRight, "TARGETS:");
-				core.draw_text(ui_font, white, hx, (state.dh as f32) - 30.0, AlignLeft, format!(" {}", mode.targets).as_slice());
+				core.draw_text(ui_font, orange, 20.0, 20.0, AlignLeft, "FUEL:");
 				
-				if state.paused
+				let fuel = player.fuel as i32;
+				let color = if fuel < 50
 				{
-					core.draw_text(ui_font, white, hx, hy, AlignCentre, "PAUSED");
+					red
 				}
-				
-				mode.star_system.get_intro_text().map(|text|
+				else if fuel < 100
 				{
-					core.draw_text(ui_font, white, hx + mode.intro_text_pos, (state.dh as f32) - 60.0, AlignCentre, text.as_slice());
-				});
+					core.map_rgb_f(0.9, 0.9, 0.1)
+				}
+				else
+				{
+					green
+				};
+				
+				core.draw_text(ui_font, color, 65.0, 20.0, AlignLeft, format!("{}", fuel).as_slice());
+			
+			
+				core.draw_text(ui_font, orange, state.dw as f32 - 130.0, 20.0, AlignLeft, "SCORE:");
+				core.draw_text(ui_font, white, state.dw as f32 - 75.0, 20.0, AlignLeft, format!("{}", mode.score as i32).as_slice());
+				
+				core.draw_text(ui_font, orange, hx, 20.0, AlignRight, "BONUS:");
+				core.draw_text(ui_font, blue, hx, 20.0, AlignLeft, format!(" {}", mode.time_bonus as i32).as_slice());
+				
+				if mode.targets <= 0
+				{
+					core.draw_text(ui_font, green, hx, hy - 10.0, AlignCentre, "MISSION ACCOMPLISHED");
+					core.draw_text(ui_font, orange, hx, hy + 10.0, AlignCentre, "PRESS 'SPACE' TO CONTINUE");
+				}
+				else
+				{			
+					core.draw_text(ui_font, orange, hx, (state.dh as f32) - 30.0, AlignRight, "TARGETS:");
+					core.draw_text(ui_font, white, hx, (state.dh as f32) - 30.0, AlignLeft, format!(" {}", mode.targets).as_slice());
+					
+					if state.paused
+					{
+						core.draw_text(ui_font, white, hx, hy, AlignCentre, "PAUSED");
+					}
+					
+					mode.star_system.get_intro_text().map(|text|
+					{
+						core.draw_text(ui_font, white, hx + mode.intro_text_pos, (state.dh as f32) - 60.0, AlignCentre, text.as_slice());
+					});
+				}
 			}
-		});
+			None =>
+			{
+				core.draw_text(ui_font, red, hx, hy + 10.0, AlignCentre, "DESTROYED! PRESS 'R' TO TRY AGAIN");
+			}
+		}
 	}
 )
