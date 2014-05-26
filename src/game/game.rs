@@ -124,7 +124,7 @@ simple_system!
 		else if reset
 		{
 			/* Man is this ugly */
-			let (appearance, sys) = 
+			let (appearance, max_fuel, sys) = 
 			{
 				let e = entities.get(entity_idx);
 				let game_mode = e.get(&components.game_mode).unwrap();
@@ -139,11 +139,12 @@ simple_system!
 					});
 				});
 				(state.appearance,
+				 game_mode.max_fuel,
 				 game_mode.star_system.clone())
 			};
 			let mut player_entity = 0;
 			let mut other_entities = vec![];
-			sys.create_entities(entities, components, appearance, 100.0, &mut player_entity, &mut other_entities);
+			sys.create_entities(entities, components, appearance, max_fuel, &mut player_entity, &mut other_entities);
 			
 			let (state, mode) = 
 			{
