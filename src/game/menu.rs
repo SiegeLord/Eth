@@ -145,6 +145,7 @@ simple_system!
 			let e = entities.get(entity_idx);
 			let state = e.get_mut(&mut components.state).unwrap();
 			state.paused = true;
+			state.sfx.play_music("data/flipit-space_tune.mod", &state.audio);
 			state.set_name = get_set_name(set_file.as_slice());
 		}
 	}

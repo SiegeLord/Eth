@@ -93,6 +93,7 @@ component!(
 		cost: i32,
 		disp_high_score: i32,
 		score_sound: Rc<Sample>,
+		purchase_sound: Rc<Sample>,
 		score_instance: Option<uint>
 	}
 )
@@ -108,6 +109,7 @@ impl IntermissMode
 		let completion_bonus = 50 * 100;
 		let score = score + time_bonus + fuel_bonus + completion_bonus;
 		let score_sound = state.sample_manager.load("data/score.ogg", &state.audio).unwrap();
+		let purchase_sound = state.sample_manager.load("data/purchase.ogg", &state.audio).unwrap();
 		
 		let high_score = max(score, high_score);
 		if high_score != old_high_score
@@ -132,6 +134,7 @@ impl IntermissMode
 			cost: 0,
 			disp_high_score: old_high_score,
 			score_sound: score_sound,
+			purchase_sound: purchase_sound,
 			score_instance: None,
 		}
 	}
@@ -236,6 +239,8 @@ component!(
 		intermiss_background: Bitmap,
 		ui_sound1: Rc<Sample>,
 		ui_sound2: Rc<Sample>,
+		explosion_sound: Rc<Sample>,
+		easter_sound: Rc<Sample>,
 		sfx: Sfx
 	}
 )
@@ -251,7 +256,10 @@ component!(
 		up_spr: Animation,
 		down_spr: Animation,
 		left_spr: Animation,
-		right_spr: Animation
+		right_spr: Animation,
+		engine_sound: Rc<Sample>,
+		engine_instance: Option<uint>,
+		camera_sound: Rc<Sample>
 	}
 )
 
@@ -270,6 +278,9 @@ impl Player
 			down_spr: Animation::new("data/thruster_down.cfg", false, state),
 			left_spr: Animation::new("data/thruster_left.cfg", false, state),
 			right_spr: Animation::new("data/thruster_right.cfg", false, state),
+			engine_sound: state.sample_manager.load("data/engine.ogg", &state.audio).unwrap(),
+			engine_instance: None,
+			camera_sound: state.sample_manager.load("data/camera.ogg", &state.audio).unwrap(),
 		}
 	}
 }

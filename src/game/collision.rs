@@ -1,3 +1,4 @@
+use allegro_audio::*;
 use ces::Entities;
 use ces::components::{Components, Location, Solid, Size, Sprite, Player, Acceleration};
 use ces::components::ComponentType;
@@ -25,13 +26,20 @@ simple_system!
 			let player_e = entities.get(player_entity);
 			let player_l = player_e.get(&components.location).unwrap();
 			let player_z = player_e.get(&components.size).unwrap();
+			let player = player_e.get(&components.player);
+			let mode_e = entities.get(MODE_ENTITY);
+			let state = mode_e.get_mut(&mut components.state).unwrap();
 			
 			let dx = (player_l.x + player_z.d / 2.0) - (l.x + z.d / 2.0);
 			let dy = (player_l.y + player_z.d / 2.0) - (l.y + z.d / 2.0);
 			let d = (player_z.d + z.d) / 2.0;
-			if dx * dx + dy * dy < d * d && player_e.get(&components.player).is_some()
+			if dx * dx + dy * dy < d * d && player.is_some()
 			{
 				collided = true;
+				player.unwrap().engine_instance.map(|inst|
+				{
+					state.sfx.get_instance(inst).set_playmode(PlaymodeOnce);
+				});
 			}
 		};
 		
@@ -44,6 +52,7 @@ simple_system!
 			
 			let state = mode_e.get_mut(&mut components.state).unwrap();
 			let player_s = player_e.get_mut(&mut components.sprite).unwrap();
+			state.sfx.play(&*state.explosion_sound, &state.audio);
 			*player_s = Sprite::new("data/explosion.cfg", true, state);
 		}
 	}

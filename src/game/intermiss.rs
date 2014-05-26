@@ -117,6 +117,8 @@ simple_system!
 										mode.score -= FUEL_COST;
 										mode.cost += FUEL_COST;
 										mode.fuel += 50.0;
+										
+										state.sfx.play(&*mode.purchase_sound, &state.audio)
 									}
 								}
 								2 =>
@@ -126,6 +128,8 @@ simple_system!
 										mode.score -= CAMERA_COST;
 										mode.cost += CAMERA_COST;
 										mode.range += 10.0;
+										
+										state.sfx.play(&*mode.purchase_sound, &state.audio)
 									}
 								}
 								_ => ()
@@ -177,6 +181,8 @@ simple_system!
 				     e.get_mut(&mut components.intermiss_mode).unwrap())
 				};
 				state.stopped = false;
+				state.sfx.play(&*state.ui_sound2, &state.audio);
+				state.sfx.play_music("data/clone_-_spacerace.mod", &state.audio);
 				MenuMode::new(state)
 			};
 			components.add(entity_idx, menu_mode, entities);

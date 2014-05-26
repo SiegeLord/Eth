@@ -1,4 +1,5 @@
 use allegro5::*;
+use allegro_audio::*;
 use ces::Entities;
 use ces::components::{Components, Location, Velocity, Acceleration, Size, Player, Sprite, Mass, OldLocation};
 use ces::components::ComponentType;
@@ -140,16 +141,37 @@ simple_system!
 		let e = entities.get(entity_idx);
 		let player = e.get_mut(&mut components.player).unwrap();
 		let a = e.get_mut(&mut components.acceleration).unwrap();
+		let mode_e = entities.get(MODE_ENTITY);
+		let state = mode_e.get_mut(&mut components.state).unwrap();
 		
 		if player.fuel > 0.0 && (player.right > 0.0 || player.left > 0.0 || player.down > 0.0 || player.up > 0.0)
 		{
 			a.ax += 0.01 * (player.right - player.left);
 			a.ay += 0.01 * (player.down - player.up);
 			player.fuel -= 1.0;
-			if player.fuel < 0.0
+			
+			if player.fuel <= 0.0
 			{
 				player.fuel = 0.0;
 			}
+			
+			if player.engine_instance.is_none()
+			{
+				player.engine_instance = Some(state.sfx.play_persistent(&*player.engine_sound, &state.audio));
+			}
+			
+			player.engine_instance.map(|inst|
+			{
+				state.sfx.get_instance(inst).set_playing(true);
+				state.sfx.get_instance(inst).set_playmode(PlaymodeLoop);
+			});
+		}
+		else
+		{
+			player.engine_instance.map(|inst|
+			{
+				state.sfx.get_instance(inst).set_playmode(PlaymodeOnce);
+			});
 		}
 	}
 )

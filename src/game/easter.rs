@@ -83,6 +83,8 @@ impl System for EasterSystem
 			let mode_e = entities.get(MODE_ENTITY);
 			
 			let state = mode_e.get_mut(&mut components.state).unwrap();
+			state.sfx.play(&*state.easter_sound, &state.audio);	
+			
 			{
 				let player_s = player_e.get_mut(&mut components.sprite).unwrap();
 				*player_s = Sprite::new("data/spaceship2.cfg", false, state);

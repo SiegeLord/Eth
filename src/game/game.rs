@@ -1,4 +1,5 @@
 use allegro5::*;
+use allegro_audio::*;
 use allegro_font::*;
 
 use ces::Entities;
@@ -91,6 +92,8 @@ simple_system!
 				     e.get_mut(&mut components.game_mode).unwrap())
 				};
 				state.stopped = false;
+				state.sfx.play(&*state.ui_sound2, &state.audio);
+				state.sfx.play_music("data/clone_-_spacerace.mod", &state.audio);
 				MenuMode::new(state)
 			};
 			components.add(entity_idx, menu_mode, entities);
@@ -122,7 +125,16 @@ simple_system!
 			{
 				let e = entities.get(entity_idx);
 				let game_mode = e.get(&components.game_mode).unwrap();
-				let state = e.get(&components.state).unwrap();
+				let state = e.get_mut(&mut components.state).unwrap();
+				let player_e = entities.get(game_mode.player_entity);
+				let player = player_e.get_mut(&mut components.player);
+				player.map(|player|
+				{
+					player.engine_instance.map(|inst|
+					{
+						state.sfx.get_instance(inst).set_playmode(PlaymodeOnce);
+					});
+				});
 				(state.appearance,
 				 game_mode.star_system.clone())
 			};
@@ -136,6 +148,9 @@ simple_system!
 				(e.get_mut(&mut components.state).unwrap(),
 				 e.get_mut(&mut components.game_mode).unwrap())
 			};
+			
+			state.sfx.play(&*state.ui_sound2, &state.audio);
+			
 			mode.player_entity = player_entity;
 			mode.other_entities = other_entities;
 			mode.time_bonus = sys.get_time_bonus();

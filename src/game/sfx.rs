@@ -5,17 +5,21 @@ pub struct Sfx
 	persistent: Vec<SampleInstance>,
 	temporary: Vec<SampleInstance>,
 	sink: Sink,
+	music: Option<AudioStream>,
+	do_music: bool,
 }
 
 impl Sfx
 {
-	pub fn new(addon: &AudioAddon) -> Sfx
+	pub fn new(addon: &AudioAddon, do_music: bool) -> Sfx
 	{
 		Sfx
 		{
 			persistent: vec![],
 			temporary: vec![],
-			sink: addon.create_sink().expect("Could not create audio sink.")
+			sink: addon.create_sink().expect("Could not create audio sink."),
+			music: None,
+			do_music: do_music,
 		}
 	}
 
@@ -53,5 +57,25 @@ impl Sfx
 	pub fn get_instance<'l>(&'l mut self, inst_idx: uint) -> &'l mut SampleInstance
 	{
 		self.persistent.get_mut(inst_idx)
+	}
+
+	pub fn play_music(&mut self, name: &str, addon: &AudioAddon)
+	{
+		self.stop_music();
+		if self.do_music
+		{
+			addon.load_audio_stream(name).map(|mut stream|
+			{
+				stream.attach(&mut self.sink);
+				stream.set_gain(0.5);
+				stream.set_playmode(PlaymodeLoop);
+				self.music = Some(stream);
+			});
+		}
+	}
+
+	pub fn stop_music(&mut self)
+	{
+		self.music = None;
 	}
 }

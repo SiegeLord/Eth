@@ -87,6 +87,7 @@ fn game()
 	
 	let manual_vsync = root.lookup("game.manual_vsync").map(|v| v.get_bool().unwrap()).unwrap_or(false);
 	let fullscreen = root.lookup("game.fullscreen").map(|v| v.get_bool().unwrap()).unwrap_or(false);
+	let music = root.lookup("game.music").map(|v| v.get_bool().unwrap()).unwrap_or(true);
 	
 	let mut core = Core::init().unwrap();
 	let font = FontAddon::init(&core).expect("Could not init font addon");
@@ -143,11 +144,14 @@ fn game()
 	world.add_system(Draw, box GameUIDrawSystem::new());
 	//~ world.add_system(Draw, box PlayerDrawSystem::new());
 	
-	let sfx = Sfx::new(&audio);
+	let mut sfx = Sfx::new(&audio, music);
+	sfx.play_music("data/clone_-_spacerace.mod", &audio);
 	let bmp_manager = ResourceManager::new();
 	let mut sample_manager = ResourceManager::new();
 	let ui_sound1 = sample_manager.load("data/ui_sound1.ogg", &audio).unwrap();
 	let ui_sound2 = sample_manager.load("data/ui_sound2.ogg", &audio).unwrap();
+	let easter_sound = sample_manager.load("data/easter.ogg", &audio).unwrap();
+	let explosion_sound = sample_manager.load("data/explosion.ogg", &audio).unwrap();
 	let ui_font = font.load_bitmap_font("data/font.png").expect("Couldn't create built-in font from 'data/font.png'");
 	let game_background = core.load_bitmap("data/bkg.png").expect("Couldn't load 'data/bkg.png'");
 	let intermiss_background = core.load_bitmap("data/intermiss.png").expect("Couldn't load 'data/intermiss.png'");
@@ -175,6 +179,8 @@ fn game()
 		set_name: "".to_strbuf(),
 		game_background: game_background,
 		intermiss_background: intermiss_background,
+		explosion_sound: explosion_sound,
+		easter_sound: easter_sound,
 	};
 	
 	world.add_entity();

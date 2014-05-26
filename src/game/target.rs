@@ -81,6 +81,7 @@ simple_system!
 			let player_e = entities.get(game_mode.player_entity);
 			let player_l = player_e.get(&components.location).unwrap();
 			let player_z = player_e.get(&components.size).unwrap();
+			let player = player_e.get(&components.player);
 			
 			state.key_down.map(|k|
 			{
@@ -93,6 +94,10 @@ simple_system!
 						if dx * dx + dy * dy < game_mode.range * game_mode.range
 						{
 							remove = true;
+							player.map(|player|
+							{
+								state.sfx.play(&*player.camera_sound, &state.audio);
+							});
 						}
 					}
 					_ => ()
