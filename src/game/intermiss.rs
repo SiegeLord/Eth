@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 use allegro5::*;
 use allegro_font::*;
 
@@ -6,7 +9,7 @@ use ces::components::{State, GameMode, MenuMode, IntermissMode, Components, Comp
 use ces::system::System;
 
 static NUM_ENTRIES: uint = 3;
-static FUEL_COST: i32 = 45000;
+static FUEL_COST: i32 = 35000;
 static CAMERA_COST: i32 = 20000;
 
 simple_system!
@@ -116,7 +119,7 @@ simple_system!
 									{
 										mode.score -= FUEL_COST;
 										mode.cost += FUEL_COST;
-										mode.fuel += 50.0;
+										mode.max_fuel += 50.0;
 										
 										state.sfx.play(&*mode.purchase_sound, &state.audio)
 									}

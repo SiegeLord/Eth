@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 use allegro_audio::*;
 use ces::Entities;
 use ces::components::{Components, Location, Solid, Size, Sprite, Player, Acceleration};

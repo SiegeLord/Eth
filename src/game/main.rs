@@ -1,3 +1,5 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
 
 #![feature(macro_rules, globs, phase)]
 
@@ -277,7 +279,7 @@ allegro_main!
 				e.as_ref::<~str>().map(|e| e.to_strbuf())
 			}).or_else(||
 			{
-				e.as_ref::<StrBuf>().map(|e| e.clone())
+				e.as_ref::<String>().map(|e| e.clone())
 			}).unwrap_or("Unknown error!".to_strbuf());
 			
 			show_native_message_box(None, "Error!", "An error has occurred! Redirect stderr from the command line for more info.", err.as_slice(), Some("You make me sad."), MESSAGEBOX_ERROR);

@@ -1,3 +1,5 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
 
 #![macro_escape]
 

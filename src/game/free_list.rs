@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 pub struct FreeList<T>
 {
 	items: Vec<Option<T>>,

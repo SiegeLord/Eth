@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 use ces::Entities;
 use ces::components::{Components, Location, Velocity, Acceleration, Size};
 use ces::components::ComponentType;

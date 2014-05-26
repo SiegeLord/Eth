@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 use collections::hashmap::HashMap;
 use std::rc::Rc;
 use std::hash::Hash;

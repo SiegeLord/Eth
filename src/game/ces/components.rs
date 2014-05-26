@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 use ces::{Component, ComponentSet, Entities};
 
 use allegro5::key::KeyCode;
@@ -78,8 +81,8 @@ component!(
 component!(
 	IntermissMode, intermiss_mode
 	{
-		set: StrBuf,
-		next: Option<StrBuf>,
+		set: String,
+		next: Option<String>,
 		score: i32,
 		high_score: i32,
 		fuel: f64,
@@ -100,7 +103,7 @@ component!(
 
 impl IntermissMode
 {
-	pub fn new(set: &str, next: Option<StrBuf>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64, fuel: f64, state: &mut State) -> IntermissMode
+	pub fn new(set: &str, next: Option<String>, time_bonus: f64, score: i32, high_score: i32, max_fuel: f64, range: f64, fuel: f64, state: &mut State) -> IntermissMode
 	{
 		let old_high_score = high_score;
 		let old_score = score;
@@ -143,7 +146,7 @@ impl IntermissMode
 component!(
 	GameMode, game_mode
 	{
-		set: StrBuf,
+		set: String,
 		star_system: StarSystem,
 		player_entity: uint,
 		other_entities: Vec<uint>,
@@ -191,7 +194,7 @@ component!(
 	{
 		cur_sel: uint,
 		set_sel: uint,
-		sets: Vec<(StrBuf, StrBuf)>,
+		sets: Vec<(String, String)>,
 		title: Rc<Bitmap>,
 		planets: Vec<Rc<Bitmap>>
 	}
@@ -222,8 +225,8 @@ component!(
 		core: Core,
 		audio: AudioAddon,
 		font: FontAddon,
-		bmp_manager: ResourceManager<StrBuf, Bitmap, BitmapLoader>,
-		sample_manager: ResourceManager<StrBuf, Sample, SampleLoader>,
+		bmp_manager: ResourceManager<String, Bitmap, BitmapLoader>,
+		sample_manager: ResourceManager<String, Sample, SampleLoader>,
 		key_down: Option<KeyCode>,
 		key_up: Option<KeyCode>,
 		ui_font: Font,
@@ -234,7 +237,7 @@ component!(
 		paused: bool,
 		stopped: bool,
 		appearance: i32,
-		set_name: StrBuf,
+		set_name: String,
 		game_background: Bitmap,
 		intermiss_background: Bitmap,
 		ui_sound1: Rc<Sample>,

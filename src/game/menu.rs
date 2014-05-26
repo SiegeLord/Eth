@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 //~ use allegro5;
 use allegro5::*;
 use allegro_font::*;

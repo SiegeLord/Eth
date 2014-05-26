@@ -1,3 +1,6 @@
+// Copyright 2014 SiegeLord
+// Licensed under GPL, see LICENSE for full terms
+
 use toml;
 use player::create_player;
 use target::create_target;
@@ -29,7 +32,7 @@ pub fn load_high_score(set: &str) -> i32
 }
 
 // filename, name
-pub fn load_sets(dir: &str) -> Vec<(StrBuf, StrBuf)>
+pub fn load_sets(dir: &str) -> Vec<(String, String)>
 {
 	let files = readdir(&Path::new(dir)).unwrap();
 	let ret: Vec<_> = files.iter().filter(|p| p.extension_str().unwrap() == "cfg").map(|p|
@@ -43,7 +46,7 @@ pub fn load_sets(dir: &str) -> Vec<(StrBuf, StrBuf)>
 	ret
 }
 
-pub fn get_set_name(set: &str) -> StrBuf
+pub fn get_set_name(set: &str) -> String
 {
 	let root = toml::parse_from_file(set).ok().expect(format!("Could not load/parse '{}'", set));
 	root.lookup("name").unwrap().get_str().unwrap().clone()
@@ -95,8 +98,8 @@ pub struct StarSystem
 	stars: Vec<(f64, f64, i32)>,
 	targets: Vec<(f64, f64, i32)>,
 	holes: Vec<(f64, f64)>,
-	intro_text: Option<StrBuf>,
-	next: Option<StrBuf>,
+	intro_text: Option<String>,
+	next: Option<String>,
 }
 
 impl StarSystem
@@ -198,12 +201,12 @@ impl StarSystem
 		self.targets.len() as i32
 	}
 
-	pub fn get_intro_text<'l>(&'l self) -> Option<&'l StrBuf>
+	pub fn get_intro_text<'l>(&'l self) -> Option<&'l String>
 	{
 		self.intro_text.as_ref()
 	}
 	
-	pub fn get_next<'l>(&'l self) -> Option<&'l StrBuf>
+	pub fn get_next<'l>(&'l self) -> Option<&'l String>
 	{
 		self.next.as_ref()
 	}
